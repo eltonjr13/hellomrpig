@@ -1,6 +1,5 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
-import { ACESFilmicToneMapping, PCFSoftShadowMap, SRGBColorSpace } from "three";
 import { MainScene } from "./scenes/MainScene";
 import { useGameStore } from "./store/useGameStore";
 import styles from "./App.module.css";
@@ -8,6 +7,8 @@ import styles from "./App.module.css";
 export default function App() {
   const npcCount = useGameStore((state) => state.npcs.length);
   const spawnedCount = useGameStore((state) => state.spawnObjects.length);
+  const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
+  const selectedCharacterName = selectedCharacterId === "samba" ? "Samba" : "Morador";
 
   return (
     <main className={styles.shell}>
@@ -15,12 +16,6 @@ export default function App() {
         shadows
         camera={{ position: [0, 5, 10], fov: 60, near: 0.1, far: 900 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
-        onCreated={({ gl }) => {
-          gl.outputColorSpace = SRGBColorSpace;
-          gl.toneMapping = ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.22;
-          gl.shadowMap.type = PCFSoftShadowMap;
-        }}
         className={styles.canvas}
       >
         <Suspense fallback={null}>
@@ -29,10 +24,11 @@ export default function App() {
       </Canvas>
 
       <section className={styles.hud} aria-label="Game status">
-        <strong>3D AI World</strong>
-        <span>NPCs: {npcCount}</span>
-        <span>Objects: {spawnedCount}</span>
-        <span>Scroll to zoom</span>
+        <strong>Village Simulation</strong>
+        <span>Personagem: {selectedCharacterName}</span>
+        <span>Habitantes: {npcCount}</span>
+        <span>Estruturas: {spawnedCount}</span>
+        <span>C para trocar</span>
       </section>
     </main>
   );

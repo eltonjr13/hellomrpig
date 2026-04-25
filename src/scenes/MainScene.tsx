@@ -11,26 +11,18 @@ const DEBUG_SCENE = false;
 export const MainScene = memo(function MainScene() {
   return (
     <>
-      <hemisphereLight args={["#f6fbff", "#7ea889", 1.65]} />
-      <ambientLight intensity={0.38} />
+      <ambientLight intensity={0.55} />
       <directionalLight
         castShadow
-        position={[-18, 34, 22]}
-        intensity={3.2}
-        color="#fff2d0"
-        shadow-mapSize={[4096, 4096]}
-        shadow-bias={-0.00008}
-        shadow-normalBias={0.045}
-        shadow-camera-near={1}
-        shadow-camera-far={90}
+        position={[12, 20, 8]}
+        intensity={2.4}
+        shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-40}
         shadow-camera-right={40}
         shadow-camera-top={40}
         shadow-camera-bottom={-40}
       />
-      <directionalLight position={[0, 10, 14]} intensity={1.15} color="#dceeff" />
-      <directionalLight position={[18, 16, -14]} intensity={0.65} color="#fff7df" />
-      <Sky sunPosition={[80, 58, 95]} turbidity={5.5} rayleigh={1.8} mieCoefficient={0.003} />
+      <Sky sunPosition={[100, 20, 100]} turbidity={8} rayleigh={1.2} mieCoefficient={0.004} />
       <Stars radius={180} depth={50} count={900} factor={3} fade speed={0.2} />
       <fog attach="fog" args={["#86b89a", 95, 360]} />
 

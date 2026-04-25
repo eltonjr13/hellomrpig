@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { Box3, Group, Vector3 } from "three";
 import { usePlayerControls } from "../../hooks/usePlayerControls";
 import { useGameStore } from "../../store/useGameStore";
-import { PLAYER_MODEL_TRANSFORM, PlayerModel, type PlayerAnimationState } from "./PlayerModel";
+import { PLAYABLE_CHARACTERS, PlayerModel, type PlayerAnimationState } from "./PlayerModel";
 
 const WALK_SPEED = 4;
 const RUN_SPEED = 6.8;
@@ -34,11 +34,15 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   const wasJumpPressedRef = useRef(false);
   const wasActionOnePressedRef = useRef(false);
   const wasActionTwoPressedRef = useRef(false);
+  const wasSwitchCharacterPressedRef = useRef(false);
   const lockedActionRef = useRef<"kick" | "dance" | null>(null);
   const lockedActionTimerRef = useRef(0);
   const [animationState, setAnimationState] = useState<PlayerAnimationState>("idle");
   const [animationSpeed, setAnimationSpeed] = useState(1);
+  const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
   const { inputRef, cameraYawRef } = usePlayerControls();
+  const selectedCharacter =
+    PLAYABLE_CHARACTERS.find((character) => character.id === selectedCharacterId) ?? PLAYABLE_CHARACTERS[0];
 
   useFrame((state, delta) => {
     const player = groupRef.current;
@@ -56,8 +60,15 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
     let didMove = false;
     const didPressActionOne = input.actionOne && !wasActionOnePressedRef.current;
     const didPressActionTwo = input.actionTwo && !wasActionTwoPressedRef.current;
+    const didPressSwitchCharacter = input.switchCharacter && !wasSwitchCharacterPressedRef.current;
     wasActionOnePressedRef.current = input.actionOne;
     wasActionTwoPressedRef.current = input.actionTwo;
+    wasSwitchCharacterPressedRef.current = input.switchCharacter;
+
+    if (didPressSwitchCharacter) {
+      useGameStore.getState().cycleSelectedCharacter();
+      lockedActionRef.current = null;
+    }
 
     if (didPressActionOne && isGroundedRef.current) {
       lockedActionRef.current = "kick";
@@ -81,18 +92,6 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
 
     if (didJump) {
       verticalVelocityRef.current = JUMP_VELOCITY;
-      isGroundedRef.current = false;
-    }
-
-    verticalVelocityRef.current -= GRAVITY * frameDelta;
-    const nextY = player.position.y + verticalVelocityRef.current * frameDelta;
-
-    if (nextY <= GROUND_Y) {
-      player.position.y = GROUND_Y;
-      verticalVelocityRef.current = 0;
-      isGroundedRef.current = true;
-    } else {
-      player.position.y = nextY;
       isGroundedRef.current = false;
     }
 
@@ -123,6 +122,18 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
         player.rotation.y = Math.atan2(movement.x, movement.z);
         didMove = true;
       }
+    }
+
+    verticalVelocityRef.current -= GRAVITY * frameDelta;
+    const nextY = player.position.y + verticalVelocityRef.current * frameDelta;
+
+    if (nextY <= GROUND_Y) {
+      player.position.y = GROUND_Y;
+      verticalVelocityRef.current = 0;
+      isGroundedRef.current = true;
+    } else {
+      player.position.y = nextY;
+      isGroundedRef.current = false;
     }
 
     const nextAnimationState: PlayerAnimationState =
@@ -157,7 +168,7 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   return (
     <group ref={groupRef} name="player" position={[0, 0, 0]}>
       <PlayerModel
-        transform={PLAYER_MODEL_TRANSFORM}
+        transform={selectedCharacter.transform}
         animationState={animationState}
         animationSpeed={animationSpeed}
         debug={debug}

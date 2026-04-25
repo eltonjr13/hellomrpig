@@ -4,37 +4,68 @@ import {
   AnimationAction,
   AnimationMixer,
   Box3,
-  Color,
-  DoubleSide,
   Group,
   LoopOnce,
-  Material,
   Mesh,
+  MeshBasicMaterial,
   SRGBColorSpace,
   Texture,
+  TextureLoader,
 } from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { centerModel, scaleModelToHeight } from "../../utils/centerModel";
 import { removeHorizontalRootMotion } from "../../utils/sanitizeMixamoClip";
-import type { Vec3Tuple } from "../../store/useGameStore";
+import type { PlayerCharacterId, Vec3Tuple } from "../../store/useGameStore";
 
 export type PlayerModelTransform = {
   path: string;
+  texturePath?: string;
+  danceAnimation?: "default" | "model";
+  groundOffset?: number;
   scale: number;
   targetHeight: number;
   rotation: Vec3Tuple;
   position: Vec3Tuple;
 };
 
+export type PlayableCharacter = {
+  id: PlayerCharacterId;
+  name: string;
+  transform: PlayerModelTransform;
+};
+
 export type PlayerAnimationState = "idle" | "walk" | "run" | "jump" | "fall" | "kick" | "dance";
 
 export const PLAYER_MODEL_TRANSFORM: PlayerModelTransform = {
   path: "/models/player/Walking.fbx",
+  texturePath: "/models/player/texture_pbr_20250901.png",
   scale: 1,
   targetHeight: 1.85,
   rotation: [0, 0, 0],
   position: [0, 0, 0],
 };
+
+export const PLAYABLE_CHARACTERS: PlayableCharacter[] = [
+  {
+    id: "main",
+    name: "Morador",
+    transform: PLAYER_MODEL_TRANSFORM,
+  },
+  {
+    id: "samba",
+    name: "Samba",
+    transform: {
+      path: "/models/characters/samba-dancing.fbx",
+      texturePath: "/models/characters/samba-dancing-texture.png",
+      danceAnimation: "model",
+      groundOffset: 0.34,
+      scale: 1,
+      targetHeight: 1.85,
+      rotation: [0, 0, 0],
+      position: [0, 0, 0],
+    },
+  },
+];
 
 const PLAYER_ANIMATION_PATHS: Partial<Record<PlayerAnimationState, string>> = {
   idle: "/models/player/Idle.fbx",
@@ -64,6 +95,7 @@ type LoadState =
   | { status: "error"; model: null; box: null };
 
 const loader = new FBXLoader();
+const textureLoader = new TextureLoader();
 
 export const PlayerModel = memo(function PlayerModel({
   transform = PLAYER_MODEL_TRANSFORM,
@@ -87,13 +119,16 @@ export const PlayerModel = memo(function PlayerModel({
 
     async function loadPlayer() {
       try {
-        const [baseFbx, idleFbx, runFbx, jumpFbx, kickFbx, danceFbx] = await Promise.all([
+        const texturePromise = transform.texturePath ? textureLoader.loadAsync(transform.texturePath) : null;
+        const [baseFbx, idleFbx, walkFbx, runFbx, jumpFbx, kickFbx, danceFbx, playerTexture] = await Promise.all([
           loader.loadAsync(transform.path),
           loader.loadAsync(PLAYER_ANIMATION_PATHS.idle!),
+          loader.loadAsync(PLAYER_ANIMATION_PATHS.walk!),
           loader.loadAsync(PLAYER_ANIMATION_PATHS.run!),
           loader.loadAsync(PLAYER_ANIMATION_PATHS.jump!),
           loader.loadAsync(PLAYER_ANIMATION_PATHS.kick!),
           loader.loadAsync(PLAYER_ANIMATION_PATHS.dance!),
+          texturePromise,
         ]);
 
         if (cancelled) return;
@@ -107,15 +142,22 @@ export const PlayerModel = memo(function PlayerModel({
           castShadow: true,
           receiveShadow: false,
         });
-        tunePlayerMaterials(model);
+        if (playerTexture) {
+          applyReadablePlayerMaterial(model, playerTexture);
+        }
 
         const clips = {
           idle: idleFbx.animations[0] ? removeHorizontalRootMotion(idleFbx.animations[0]) : null,
-          walk: baseFbx.animations[0] ? removeHorizontalRootMotion(baseFbx.animations[0]) : null,
+          walk: walkFbx.animations[0] ? removeHorizontalRootMotion(walkFbx.animations[0]) : null,
           run: runFbx.animations[0] ? removeHorizontalRootMotion(runFbx.animations[0]) : null,
           jump: jumpFbx.animations[0] ? removeHorizontalRootMotion(jumpFbx.animations[0]) : null,
           kick: kickFbx.animations[0] ? removeHorizontalRootMotion(kickFbx.animations[0]) : null,
-          dance: danceFbx.animations[0] ? removeHorizontalRootMotion(danceFbx.animations[0]) : null,
+          dance:
+            transform.danceAnimation === "model" && baseFbx.animations[0]
+              ? removeHorizontalRootMotion(baseFbx.animations[0])
+              : danceFbx.animations[0]
+                ? removeHorizontalRootMotion(danceFbx.animations[0])
+                : null,
         };
         const mixer = new AnimationMixer(model);
         const actions: Partial<Record<PlayerAnimationState, AnimationAction>> = {};
@@ -148,7 +190,7 @@ export const PlayerModel = memo(function PlayerModel({
       activeMixer?.stopAllAction();
       activeActionRef.current = null;
     };
-  }, [transform.path, transform.scale, transform.targetHeight]);
+  }, [transform.path, transform.scale, transform.targetHeight, transform.texturePath]);
 
   useFrame(({ clock }, delta) => {
     const root = animationRootRef.current;
@@ -197,7 +239,7 @@ export const PlayerModel = memo(function PlayerModel({
   return (
     <group
       name="player-model-root"
-      position={transform.position}
+      position={[transform.position[0], transform.position[1] + (transform.groundOffset ?? 0), transform.position[2]]}
       rotation={transform.rotation}
       scale={transform.scale}
     >
@@ -279,55 +321,20 @@ function PlayerModelFallback({
   );
 }
 
-type LightResponsiveMaterial = Material & {
-  color?: Color;
-  roughness?: number;
-  metalness?: number;
-  envMapIntensity?: number;
-  map?: Texture | null;
-  emissive?: Color;
-  emissiveIntensity?: number;
-};
+function applyReadablePlayerMaterial(model: Group, texture: Texture) {
+  texture.colorSpace = SRGBColorSpace;
+  texture.needsUpdate = true;
 
-const PLAYER_MIN_BASE_COLOR = new Color("#ded3c0");
-const PLAYER_AMBIENT_LIFT = new Color("#6f6658");
-
-function tunePlayerMaterials(model: Group) {
   model.traverse((object) => {
     if (!(object instanceof Mesh)) return;
+
     object.castShadow = true;
     object.receiveShadow = false;
-
-    const materials = Array.isArray(object.material) ? object.material : [object.material];
-
-    for (const material of materials) {
-      if (!material) continue;
-
-      const tuned = material as LightResponsiveMaterial;
-      material.side = DoubleSide;
-      tuned.roughness = Math.min(Math.max(tuned.roughness ?? 0.7, 0.52), 0.82);
-      tuned.metalness = Math.min(tuned.metalness ?? 0, 0.04);
-      tuned.envMapIntensity = Math.max(tuned.envMapIntensity ?? 0, 0.55);
-
-      if (tuned.map) {
-        tuned.map.colorSpace = SRGBColorSpace;
-        tuned.map.needsUpdate = true;
-      }
-
-      if (tuned.color instanceof Color) {
-        const brightness = Math.max(tuned.color.r, tuned.color.g, tuned.color.b);
-        if (brightness < 0.34) {
-          tuned.color.lerp(PLAYER_MIN_BASE_COLOR, 0.65);
-        }
-      }
-
-      if (tuned.emissive instanceof Color) {
-        tuned.emissive.copy(PLAYER_AMBIENT_LIFT);
-        tuned.emissiveIntensity = Math.max(tuned.emissiveIntensity ?? 0, 0.34);
-      }
-
-      material.needsUpdate = true;
-    }
+    object.material = new MeshBasicMaterial({
+      map: texture,
+      color: "#ffffff",
+      toneMapped: false,
+    });
   });
 }
 
