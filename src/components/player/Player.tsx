@@ -1,4 +1,4 @@
-import { memo, useRef } from "react";
+import { memo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Box3, Group, Vector3 } from "three";
 import { usePlayerControls } from "../../hooks/usePlayerControls";
@@ -22,6 +22,8 @@ type PlayerProps = {
 
 export const Player = memo(function Player({ debug = false }: PlayerProps) {
   const groupRef = useRef<Group>(null);
+  const isWalkingRef = useRef(false);
+  const [isWalking, setIsWalking] = useState(false);
   const { inputRef, cameraYawRef } = usePlayerControls();
 
   useFrame((state, delta) => {
@@ -35,6 +37,8 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
     if (input.backward) movement.z += 1;
     if (input.left) movement.x -= 1;
     if (input.right) movement.x += 1;
+
+    let didMove = false;
 
     if (movement.lengthSq() > 0) {
       movement.normalize().applyAxisAngle(upAxis, cameraYawRef.current);
@@ -54,7 +58,13 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
       if (!blocked) {
         player.position.copy(nextPosition);
         player.rotation.y = Math.atan2(movement.x, movement.z);
+        didMove = true;
       }
+    }
+
+    if (isWalkingRef.current !== didMove) {
+      isWalkingRef.current = didMove;
+      setIsWalking(didMove);
     }
 
     useGameStore
@@ -64,9 +74,9 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
 
   return (
     <group ref={groupRef} name="player" position={[0, 0, 0]}>
-      <PlayerModel transform={PLAYER_MODEL_TRANSFORM} debug={debug} />
-      {/* Future Mixamo pipeline: replace the static OBJ with a rigged FBX/GLB and blend idle/walk/run clips here. */}
-      {/* OBJ files normally do not include skeletons, so movement currently translates/rotates this whole group. */}
+      <PlayerModel transform={PLAYER_MODEL_TRANSFORM} isWalking={isWalking} debug={debug} />
+      {/* Mixamo pipeline: add idle/run clips later and blend actions in PlayerModel with the same mixer. */}
+      {/* Movement still translates/rotates this root group; skeletal animation only affects the loaded FBX. */}
     </group>
   );
 });

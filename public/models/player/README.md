@@ -1,13 +1,20 @@
-# Player OBJ
+# Player model
 
-Place the T-pose character OBJ here:
+Current player model:
 
 ```text
-public/models/player/player.obj
+public/models/player/Walking.fbx
 ```
 
-The runtime path used by the game is:
+Runtime path:
 
 ```text
-/models/player/player.obj
+/models/player/Walking.fbx
+```
+
+This is a Mixamo FBX with a walking clip. Add future clips here as separate files, for example:
+
+```text
+Idle.fbx
+Run.fbx
 ```

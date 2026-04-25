@@ -49,3 +49,19 @@ export function centerModel(model: Object3D, options: CenterModelOptions = {}): 
     center: finalBox.getCenter(new Vector3()),
   };
 }
+
+export function scaleModelToHeight(model: Object3D, targetHeight: number): number {
+  model.updateMatrixWorld(true);
+  const box = new Box3().setFromObject(model);
+  const size = box.getSize(new Vector3());
+
+  if (!Number.isFinite(size.y) || size.y <= 0) {
+    return 1;
+  }
+
+  const scaleMultiplier = targetHeight / size.y;
+  model.scale.multiplyScalar(scaleMultiplier);
+  model.updateMatrixWorld(true);
+
+  return scaleMultiplier;
+}
