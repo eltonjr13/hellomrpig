@@ -35,11 +35,13 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   const wasActionOnePressedRef = useRef(false);
   const wasActionTwoPressedRef = useRef(false);
   const wasSwitchCharacterPressedRef = useRef(false);
+  const wasToggleCameraPressedRef = useRef(false);
   const lockedActionRef = useRef<"kick" | "dance" | null>(null);
   const lockedActionTimerRef = useRef(0);
   const [animationState, setAnimationState] = useState<PlayerAnimationState>("idle");
   const [animationSpeed, setAnimationSpeed] = useState(1);
   const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
+  const cameraMode = useGameStore((state) => state.cameraMode);
   const { inputRef, cameraYawRef } = usePlayerControls();
   const selectedCharacter =
     PLAYABLE_CHARACTERS.find((character) => character.id === selectedCharacterId) ?? PLAYABLE_CHARACTERS[0];
@@ -61,13 +63,19 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
     const didPressActionOne = input.actionOne && !wasActionOnePressedRef.current;
     const didPressActionTwo = input.actionTwo && !wasActionTwoPressedRef.current;
     const didPressSwitchCharacter = input.switchCharacter && !wasSwitchCharacterPressedRef.current;
+    const didPressToggleCamera = input.toggleCamera && !wasToggleCameraPressedRef.current;
     wasActionOnePressedRef.current = input.actionOne;
     wasActionTwoPressedRef.current = input.actionTwo;
     wasSwitchCharacterPressedRef.current = input.switchCharacter;
+    wasToggleCameraPressedRef.current = input.toggleCamera;
 
     if (didPressSwitchCharacter) {
       useGameStore.getState().cycleSelectedCharacter();
       lockedActionRef.current = null;
+    }
+
+    if (didPressToggleCamera) {
+      useGameStore.getState().toggleCameraMode();
     }
 
     if (didPressActionOne && isGroundedRef.current) {
@@ -172,6 +180,7 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
         animationState={animationState}
         animationSpeed={animationSpeed}
         debug={debug}
+        visible={cameraMode !== "firstPerson"}
       />
       {/* Mixamo pipeline: add Idle/Fall/Land clips later and blend actions in PlayerModel with the same mixer. */}
       {/* Movement still translates/rotates this root group; skeletal animation only affects the loaded FBX. */}

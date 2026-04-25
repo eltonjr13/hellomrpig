@@ -81,6 +81,7 @@ type PlayerModelProps = {
   animationState?: PlayerAnimationState;
   animationSpeed?: number;
   debug?: boolean;
+  visible?: boolean;
 };
 
 type LoadState =
@@ -102,6 +103,7 @@ export const PlayerModel = memo(function PlayerModel({
   animationState = "idle",
   animationSpeed = 1,
   debug = false,
+  visible = true,
 }: PlayerModelProps) {
   const animationRootRef = useRef<Group>(null);
   const activeActionRef = useRef<AnimationAction | null>(null);
@@ -242,6 +244,7 @@ export const PlayerModel = memo(function PlayerModel({
       position={[transform.position[0], transform.position[1] + (transform.groundOffset ?? 0), transform.position[2]]}
       rotation={transform.rotation}
       scale={transform.scale}
+      visible={visible}
     >
       <group ref={animationRootRef} name="player-animation-root">
         {loadState.status === "ready" ? (

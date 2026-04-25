@@ -8,7 +8,9 @@ export default function App() {
   const npcCount = useGameStore((state) => state.npcs.length);
   const spawnedCount = useGameStore((state) => state.spawnObjects.length);
   const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
+  const cameraMode = useGameStore((state) => state.cameraMode);
   const selectedCharacterName = selectedCharacterId === "samba" ? "Samba" : "Morador";
+  const cameraModeLabel = cameraMode === "firstPerson" ? "1a pessoa" : "3a pessoa";
 
   return (
     <main className={styles.shell}>
@@ -26,9 +28,10 @@ export default function App() {
       <section className={styles.hud} aria-label="Game status">
         <strong>Village Simulation</strong>
         <span>Personagem: {selectedCharacterName}</span>
+        <span>Camera: {cameraModeLabel}</span>
         <span>Habitantes: {npcCount}</span>
         <span>Estruturas: {spawnedCount}</span>
-        <span>C para trocar</span>
+        <span>C troca / V camera</span>
       </section>
     </main>
   );

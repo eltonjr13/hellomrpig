@@ -15,6 +15,7 @@ export type PlayerInputState = {
   actionOne: boolean;
   actionTwo: boolean;
   switchCharacter: boolean;
+  toggleCamera: boolean;
 };
 
 const keyMap: Record<string, keyof PlayerInputState> = {
@@ -34,6 +35,7 @@ const keyMap: Record<string, keyof PlayerInputState> = {
   Digit2: "actionTwo",
   Numpad2: "actionTwo",
   KeyC: "switchCharacter",
+  KeyV: "toggleCamera",
 };
 
 export function usePlayerControls() {
@@ -47,6 +49,7 @@ export function usePlayerControls() {
     actionOne: false,
     actionTwo: false,
     switchCharacter: false,
+    toggleCamera: false,
   });
 
   const cameraYawRef = useRef(useGameStore.getState().cameraYaw);

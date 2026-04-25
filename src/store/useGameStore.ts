@@ -3,6 +3,7 @@ import { create } from "zustand";
 export type Vec3Tuple = [number, number, number];
 
 export type PlayerCharacterId = "main" | "samba";
+export type CameraMode = "thirdPerson" | "firstPerson";
 
 export type SpawnObject = {
   id: string;
@@ -32,6 +33,7 @@ type GameState = {
   playerRotationY: number;
   playerIsMoving: boolean;
   selectedCharacterId: PlayerCharacterId;
+  cameraMode: CameraMode;
   cameraYaw: number;
   cameraPitch: number;
   cameraDistance: number;
@@ -40,6 +42,7 @@ type GameState = {
   setPlayerTransform: (position: Vec3Tuple, rotationY: number, isMoving: boolean) => void;
   setSelectedCharacter: (characterId: PlayerCharacterId) => void;
   cycleSelectedCharacter: () => void;
+  toggleCameraMode: () => void;
   setCameraOrbit: (yaw: number, pitch: number) => void;
   setCameraDistance: (distance: number) => void;
   addSpawnObject: (object: SpawnObject) => void;
@@ -120,6 +123,7 @@ export const useGameStore = create<GameState>((set) => ({
   playerRotationY: 0,
   playerIsMoving: false,
   selectedCharacterId: "main",
+  cameraMode: "thirdPerson",
   cameraYaw: 0,
   cameraPitch: 0.42,
   cameraDistance: 9,
@@ -131,6 +135,10 @@ export const useGameStore = create<GameState>((set) => ({
   cycleSelectedCharacter: () =>
     set((state) => ({
       selectedCharacterId: state.selectedCharacterId === "main" ? "samba" : "main",
+    })),
+  toggleCameraMode: () =>
+    set((state) => ({
+      cameraMode: state.cameraMode === "thirdPerson" ? "firstPerson" : "thirdPerson",
     })),
   setCameraOrbit: (cameraYaw, cameraPitch) => set({ cameraYaw, cameraPitch }),
   setCameraDistance: (cameraDistance) => set({ cameraDistance }),
