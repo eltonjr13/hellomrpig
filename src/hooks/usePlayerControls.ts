@@ -10,6 +10,10 @@ export type PlayerInputState = {
   backward: boolean;
   left: boolean;
   right: boolean;
+  jump: boolean;
+  run: boolean;
+  actionOne: boolean;
+  actionTwo: boolean;
 };
 
 const keyMap: Record<string, keyof PlayerInputState> = {
@@ -21,6 +25,13 @@ const keyMap: Record<string, keyof PlayerInputState> = {
   ArrowLeft: "left",
   KeyD: "right",
   ArrowRight: "right",
+  Space: "jump",
+  ShiftLeft: "run",
+  ShiftRight: "run",
+  Digit1: "actionOne",
+  Numpad1: "actionOne",
+  Digit2: "actionTwo",
+  Numpad2: "actionTwo",
 };
 
 export function usePlayerControls() {
@@ -29,6 +40,10 @@ export function usePlayerControls() {
     backward: false,
     left: false,
     right: false,
+    jump: false,
+    run: false,
+    actionOne: false,
+    actionTwo: false,
   });
 
   const cameraYawRef = useRef(useGameStore.getState().cameraYaw);

@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
+import { ACESFilmicToneMapping, PCFSoftShadowMap, SRGBColorSpace } from "three";
 import { MainScene } from "./scenes/MainScene";
 import { useGameStore } from "./store/useGameStore";
 import styles from "./App.module.css";
@@ -14,6 +15,12 @@ export default function App() {
         shadows
         camera={{ position: [0, 5, 10], fov: 60, near: 0.1, far: 900 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
+        onCreated={({ gl }) => {
+          gl.outputColorSpace = SRGBColorSpace;
+          gl.toneMapping = ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.22;
+          gl.shadowMap.type = PCFSoftShadowMap;
+        }}
         className={styles.canvas}
       >
         <Suspense fallback={null}>

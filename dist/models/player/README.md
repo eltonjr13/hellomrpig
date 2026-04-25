@@ -1,6 +1,6 @@
 # Player model
 
-Current player model:
+Current player base model:
 
 ```text
 public/models/player/Walking.fbx
@@ -12,9 +12,15 @@ Runtime path:
 /models/player/Walking.fbx
 ```
 
-This is a Mixamo FBX with a walking clip. Add future clips here as separate files, for example:
+Current Mixamo animation clips:
 
 ```text
 Idle.fbx
+Walking.fbx
 Run.fbx
+Jump.fbx
+HurricaneKick.fbx
+HouseDance.fbx
 ```
+
+Use In Place for locomotion clips. For production, combine the final rig and clips into one optimized `.glb`.
