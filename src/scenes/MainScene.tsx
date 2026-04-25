@@ -36,7 +36,7 @@ export const MainScene = memo(function MainScene() {
       <Ground />
       <SpawnedObjects />
       <NpcSystem />
-      <Player debug={DEBUG_SCENE} />
+      <Player debug={false} />
       <CameraController />
     </>
   );

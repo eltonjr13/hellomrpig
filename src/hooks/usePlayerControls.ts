@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useGameStore } from "../store/useGameStore";
 
+const CAMERA_ZOOM_SENSITIVITY = 0.006;
+const MIN_CAMERA_DISTANCE = 3.5;
+const MAX_CAMERA_DISTANCE = 18;
+
 export type PlayerInputState = {
   forward: boolean;
   backward: boolean;
@@ -28,10 +32,12 @@ export function usePlayerControls() {
   });
 
   const cameraYawRef = useRef(useGameStore.getState().cameraYaw);
+  const cameraDistanceRef = useRef(useGameStore.getState().cameraDistance);
 
   useEffect(() => {
     const unsubscribe = useGameStore.subscribe((state) => {
       cameraYawRef.current = state.cameraYaw;
+      cameraDistanceRef.current = state.cameraDistance;
     });
 
     const setKey = (event: KeyboardEvent, pressed: boolean) => {
@@ -41,10 +47,15 @@ export function usePlayerControls() {
       event.preventDefault();
     };
 
-    const onMouseMove = (event: MouseEvent) => {
-      if (document.pointerLockElement !== document.body) return;
-      const nextYaw = cameraYawRef.current - event.movementX * 0.003;
-      useGameStore.getState().setCameraYaw(nextYaw);
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+
+      const nextDistance = clamp(
+        cameraDistanceRef.current + event.deltaY * CAMERA_ZOOM_SENSITIVITY,
+        MIN_CAMERA_DISTANCE,
+        MAX_CAMERA_DISTANCE,
+      );
+      useGameStore.getState().setCameraDistance(nextDistance);
     };
 
     const onKeyDown = (event: KeyboardEvent) => setKey(event, true);
@@ -52,13 +63,13 @@ export function usePlayerControls() {
 
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
-    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("wheel", onWheel, { passive: false });
 
     return () => {
       unsubscribe();
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
-      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("wheel", onWheel);
     };
   }, []);
 
@@ -66,7 +77,12 @@ export function usePlayerControls() {
     () => ({
       inputRef,
       cameraYawRef,
+      cameraDistanceRef,
     }),
     [],
   );
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
 }
