@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { AnimationAction, AnimationMixer, Box3, Group, Mesh } from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { centerModel, scaleModelToHeight } from "../../utils/centerModel";
+import { removeHorizontalRootMotion } from "../../utils/sanitizeMixamoClip";
 import type { Vec3Tuple } from "../../store/useGameStore";
 
 export type PlayerModelTransform = {
@@ -68,8 +69,9 @@ export const PlayerModel = memo(function PlayerModel({
           receiveShadow: true,
         });
 
-        const mixer = fbx.animations.length > 0 ? new AnimationMixer(model) : null;
-        const walkAction = mixer ? mixer.clipAction(model.animations[0]) : null;
+        const walkClip = fbx.animations[0] ? removeHorizontalRootMotion(fbx.animations[0]) : null;
+        const mixer = walkClip ? new AnimationMixer(model) : null;
+        const walkAction = mixer && walkClip ? mixer.clipAction(walkClip) : null;
 
         if (walkAction) {
           walkAction.enabled = true;
