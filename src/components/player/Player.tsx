@@ -1,12 +1,15 @@
 import { memo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Box3, Group, Vector3 } from "three";
+import { Box3, Group, Scene, Vector3 } from "three";
 import { usePlayerControls } from "../../hooks/usePlayerControls";
 import { useGameStore } from "../../store/useGameStore";
 import { PLAYABLE_CHARACTERS, PlayerModel, type PlayerAnimationState } from "./PlayerModel";
 
 const WALK_SPEED = 4;
 const RUN_SPEED = 6.8;
+const MOVE_ACCELERATION = 12;
+const MOVE_DECELERATION = 14;
+const TURN_SPEED = 12;
 const JUMP_VELOCITY = 7.5;
 const GRAVITY = 22;
 const GROUND_Y = 0;
@@ -16,7 +19,10 @@ const KICK_DURATION = 1.2;
 const playerBounds = new Box3();
 const objectBounds = new Box3();
 const nextPosition = new Vector3();
+const slidePosition = new Vector3();
+const boundsCenter = new Vector3();
 const movement = new Vector3();
+const desiredVelocity = new Vector3();
 const upAxis = new Vector3(0, 1, 0);
 const playerBoxSize = new Vector3(0.85, 1.8, 0.85);
 const playerBoxOffset = new Vector3(0, 0.9, 0);
@@ -29,6 +35,7 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   const groupRef = useRef<Group>(null);
   const animationStateRef = useRef<PlayerAnimationState>("idle");
   const animationSpeedRef = useRef(1);
+  const horizontalVelocityRef = useRef(new Vector3());
   const verticalVelocityRef = useRef(0);
   const isGroundedRef = useRef(true);
   const wasJumpPressedRef = useRef(false);
@@ -60,6 +67,8 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
     if (input.right) movement.x += 1;
 
     let didMove = false;
+    const previousX = player.position.x;
+    const previousZ = player.position.z;
     const didPressActionOne = input.actionOne && !wasActionOnePressedRef.current;
     const didPressActionTwo = input.actionTwo && !wasActionTwoPressedRef.current;
     const didPressSwitchCharacter = input.switchCharacter && !wasSwitchCharacterPressedRef.current;
@@ -103,32 +112,57 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
       isGroundedRef.current = false;
     }
 
-    if (movement.lengthSq() > 0) {
+    const hasMoveInput = movement.lengthSq() > 0;
+
+    if (hasMoveInput) {
       if (lockedActionRef.current === "dance") {
         lockedActionRef.current = null;
       }
 
       movement.normalize().applyAxisAngle(upAxis, cameraYawRef.current);
-      nextPosition
-        .copy(player.position)
-        .addScaledVector(movement, frameDelta * (input.run ? RUN_SPEED : WALK_SPEED));
+      desiredVelocity.copy(movement).multiplyScalar(input.run ? RUN_SPEED : WALK_SPEED);
+    } else {
+      desiredVelocity.set(0, 0, 0);
+    }
+
+    const velocitySmoothing = 1 - Math.exp(-(hasMoveInput ? MOVE_ACCELERATION : MOVE_DECELERATION) * frameDelta);
+    horizontalVelocityRef.current.lerp(desiredVelocity, velocitySmoothing);
+
+    if (horizontalVelocityRef.current.lengthSq() < 0.01) {
+      horizontalVelocityRef.current.set(0, 0, 0);
+    }
+
+    if (horizontalVelocityRef.current.lengthSq() > 0) {
+      nextPosition.copy(player.position).addScaledVector(horizontalVelocityRef.current, frameDelta);
       nextPosition.x = Math.max(-WORLD_LIMIT, Math.min(WORLD_LIMIT, nextPosition.x));
       nextPosition.z = Math.max(-WORLD_LIMIT, Math.min(WORLD_LIMIT, nextPosition.z));
 
-      playerBounds.setFromCenterAndSize(nextPosition.clone().add(playerBoxOffset), playerBoxSize);
-
-      let blocked = false;
-      state.scene.traverse((object) => {
-        if (blocked || !object.userData.collision) return;
-        objectBounds.setFromObject(object);
-        blocked = playerBounds.intersectsBox(objectBounds);
-      });
-
-      if (!blocked) {
+      if (canOccupyPosition(state.scene, nextPosition)) {
         player.position.x = nextPosition.x;
         player.position.z = nextPosition.z;
-        player.rotation.y = Math.atan2(movement.x, movement.z);
-        didMove = true;
+      } else {
+        slidePosition.set(nextPosition.x, player.position.y, player.position.z);
+        if (canOccupyPosition(state.scene, slidePosition)) {
+          player.position.x = slidePosition.x;
+          horizontalVelocityRef.current.z = 0;
+        } else {
+          horizontalVelocityRef.current.x = 0;
+        }
+
+        slidePosition.set(player.position.x, player.position.y, nextPosition.z);
+        if (canOccupyPosition(state.scene, slidePosition)) {
+          player.position.z = slidePosition.z;
+          horizontalVelocityRef.current.x *= 0.65;
+        } else {
+          horizontalVelocityRef.current.z = 0;
+        }
+      }
+
+      didMove = Math.abs(player.position.x - previousX) + Math.abs(player.position.z - previousZ) > 0.002;
+
+      if (didMove) {
+        const targetRotation = Math.atan2(horizontalVelocityRef.current.x, horizontalVelocityRef.current.z);
+        player.rotation.y = lerpAngle(player.rotation.y, targetRotation, 1 - Math.exp(-TURN_SPEED * frameDelta));
       }
     }
 
@@ -187,3 +221,21 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
     </group>
   );
 });
+
+function canOccupyPosition(scene: Scene, position: Vector3) {
+  playerBounds.setFromCenterAndSize(boundsCenter.copy(position).add(playerBoxOffset), playerBoxSize);
+
+  let blocked = false;
+  scene.traverse((object) => {
+    if (blocked || !object.userData.collision) return;
+    objectBounds.setFromObject(object);
+    blocked = playerBounds.intersectsBox(objectBounds);
+  });
+
+  return !blocked;
+}
+
+function lerpAngle(from: number, to: number, t: number) {
+  const delta = Math.atan2(Math.sin(to - from), Math.cos(to - from));
+  return from + delta * t;
+}
