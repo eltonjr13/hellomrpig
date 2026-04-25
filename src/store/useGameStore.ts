@@ -24,12 +24,13 @@ export type NpcAgent = {
 type GameState = {
   playerPosition: Vec3Tuple;
   playerRotationY: number;
+  playerIsMoving: boolean;
   cameraYaw: number;
   cameraPitch: number;
   cameraDistance: number;
   spawnObjects: SpawnObject[];
   npcs: NpcAgent[];
-  setPlayerTransform: (position: Vec3Tuple, rotationY: number) => void;
+  setPlayerTransform: (position: Vec3Tuple, rotationY: number, isMoving: boolean) => void;
   setCameraOrbit: (yaw: number, pitch: number) => void;
   setCameraDistance: (distance: number) => void;
   addSpawnObject: (object: SpawnObject) => void;
@@ -58,12 +59,14 @@ const initialNpcs: NpcAgent[] = [
 export const useGameStore = create<GameState>((set) => ({
   playerPosition: [0, 0, 0],
   playerRotationY: 0,
+  playerIsMoving: false,
   cameraYaw: 0,
   cameraPitch: 0.42,
   cameraDistance: 9,
   spawnObjects: initialSpawnObjects,
   npcs: initialNpcs,
-  setPlayerTransform: (playerPosition, playerRotationY) => set({ playerPosition, playerRotationY }),
+  setPlayerTransform: (playerPosition, playerRotationY, playerIsMoving) =>
+    set({ playerPosition, playerRotationY, playerIsMoving }),
   setCameraOrbit: (cameraYaw, cameraPitch) => set({ cameraYaw, cameraPitch }),
   setCameraDistance: (cameraDistance) => set({ cameraDistance }),
   addSpawnObject: (object) =>

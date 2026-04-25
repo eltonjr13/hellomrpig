@@ -69,7 +69,7 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
 
     useGameStore
       .getState()
-      .setPlayerTransform([player.position.x, player.position.y, player.position.z], player.rotation.y);
+      .setPlayerTransform([player.position.x, player.position.y, player.position.z], player.rotation.y, didMove);
   });
 
   return (
