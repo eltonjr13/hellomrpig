@@ -1,0 +1,104 @@
+import type { Planet, PlanetWorld } from "../PlanetManager";
+
+export function createOrganicPlanetWorld(planet: Planet): PlanetWorld {
+  const prefix = planet.id;
+
+  return {
+    instanceKey: `${planet.id}:${planet.seed}`,
+    planet,
+    spawnPoint: [0, 0, 5],
+    spawnRotationY: Math.PI,
+    environment: {
+      skyColor: "#87c8a5",
+      groundColor: "#1b4332",
+      fogColor: "#86b89a",
+      fogNear: 95,
+      fogFar: 360,
+      ambientIntensity: 0.58,
+      sunIntensity: 2.35,
+      starCount: 900,
+    },
+    spawnObjects: [
+      {
+        id: `${prefix}-path-main`,
+        type: "path",
+        position: [0, 0.01, -6],
+        color: "#9b7653",
+        scale: [4, 0.03, 22],
+        collision: false,
+      },
+      {
+        id: `${prefix}-path-cross`,
+        type: "path",
+        position: [0, 0.012, -8],
+        color: "#9b7653",
+        scale: [20, 0.03, 3.2],
+        collision: false,
+      },
+      { id: `${prefix}-house-1`, type: "house", position: [-8, 0.8, -8], color: "#cf8f5a", scale: [3.2, 1.6, 3], rotationY: 0.2 },
+      { id: `${prefix}-house-2`, type: "house", position: [8, 0.8, -8], color: "#d9a05f", scale: [3.2, 1.6, 3], rotationY: -0.18 },
+      { id: `${prefix}-market-1`, type: "market", position: [0, 0.75, -14], color: "#4d9de0", scale: [4.6, 1.5, 2.6] },
+      { id: `${prefix}-well-1`, type: "well", position: [0, 0.45, -4], color: "#8d99ae", scale: 1.15 },
+      { id: `${prefix}-field-1`, type: "field", position: [-9, 0.05, 2], color: "#7cb342", scale: [6, 0.1, 5], collision: false },
+      { id: `${prefix}-field-2`, type: "field", position: [9, 0.05, 2], color: "#8bc34a", scale: [6, 0.1, 5], collision: false },
+      { id: `${prefix}-storage-1`, type: "storage", position: [-4.8, 0.55, -15], color: "#b96f3c", scale: [2.2, 1.1, 2.2] },
+      { id: `${prefix}-rock-1`, type: "rock", position: [6, 0.35, -1], color: "#6c757d", scale: [1.4, 0.7, 1.1] },
+      { id: `${prefix}-tree-1`, type: "tree", position: [-13, 0, -1], color: "#2d6a4f", scale: 1.4 },
+      { id: `${prefix}-tree-2`, type: "tree", position: [13, 0, -2], color: "#2f7d4f", scale: 1.25 },
+      { id: `${prefix}-tree-3`, type: "tree", position: [-12, 0, -16], color: "#2d6a4f", scale: 1.2 },
+      { id: `${prefix}-tree-4`, type: "tree", position: [12, 0, -17], color: "#2f7d4f", scale: 1.35 },
+      { id: `${prefix}-growth-ring`, type: "field", position: [0, 0.035, 8], color: "#52b788", scale: [9, 0.08, 3.5], collision: false },
+      { id: `${prefix}-nursery-tree`, type: "tree", position: [0, 0, 10], color: "#40916c", scale: 1.75 },
+    ],
+    npcs: [
+      {
+        id: `${prefix}-npc-farmer`,
+        name: "Ana",
+        role: "farmer",
+        position: [-8, 0, 1],
+        targetPosition: [-10, 0, 4],
+        mood: "moving",
+        aiProfile: {
+          goal: "Cultivar biomas organicos e acelerar a evolucao natural do planeta.",
+          memory: ["As areas verdes respondem ao movimento dos habitantes."],
+        },
+      },
+      {
+        id: `${prefix}-npc-builder`,
+        name: "Bruno",
+        role: "builder",
+        position: [7, 0, -10],
+        targetPosition: [4, 0, -14],
+        mood: "curious",
+        aiProfile: {
+          goal: "Manter estruturas vivas sem interromper o crescimento do bioma.",
+          memory: ["A estufa central precisa de manutencao constante."],
+        },
+      },
+      {
+        id: `${prefix}-npc-merchant`,
+        name: "Clara",
+        role: "merchant",
+        position: [1.5, 0, -13],
+        targetPosition: [-2, 0, -13],
+        mood: "idle",
+        aiProfile: {
+          goal: "Trocar sementes raras com visitantes do planeta.",
+          memory: ["Viajantes chegam pela trilha principal."],
+        },
+      },
+      {
+        id: `${prefix}-npc-wanderer`,
+        name: "Davi",
+        role: "wanderer",
+        position: [4, 0, -2],
+        targetPosition: [-4, 0, -5],
+        mood: "moving",
+        aiProfile: {
+          goal: "Observar a evolucao do vilarejo vivo.",
+          memory: ["O poco e um ponto comum de encontro."],
+        },
+      },
+    ],
+  };
+}

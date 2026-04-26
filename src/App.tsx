@@ -1,10 +1,12 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense } from "react";
+import { PlanetSelector } from "./components/ui/PlanetSelector";
 import { MainScene } from "./scenes/MainScene";
 import { useGameStore } from "./store/useGameStore";
 import styles from "./App.module.css";
 
 export default function App() {
+  const currentPlanet = useGameStore((state) => state.currentPlanet);
   const npcCount = useGameStore((state) => state.npcs.length);
   const spawnedCount = useGameStore((state) => state.spawnObjects.length);
   const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
@@ -27,12 +29,15 @@ export default function App() {
 
       <section className={styles.hud} aria-label="Game status">
         <strong>Village Simulation</strong>
+        <span>Planeta: {currentPlanet.name}</span>
         <span>Personagem: {selectedCharacterName}</span>
         <span>Camera: {cameraModeLabel}</span>
         <span>Habitantes: {npcCount}</span>
         <span>Estruturas: {spawnedCount}</span>
         <span>C troca / V camera</span>
       </section>
+
+      <PlanetSelector />
     </main>
   );
 }

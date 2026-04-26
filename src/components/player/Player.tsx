@@ -47,6 +47,8 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   const lockedActionTimerRef = useRef(0);
   const [animationState, setAnimationState] = useState<PlayerAnimationState>("idle");
   const [animationSpeed, setAnimationSpeed] = useState(1);
+  const initialPlayerPositionRef = useRef(useGameStore.getState().playerPosition);
+  const initialPlayerRotationYRef = useRef(useGameStore.getState().playerRotationY);
   const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
   const cameraMode = useGameStore((state) => state.cameraMode);
   const { inputRef, cameraYawRef } = usePlayerControls();
@@ -208,7 +210,12 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   });
 
   return (
-    <group ref={groupRef} name="player" position={[0, 0, 0]}>
+    <group
+      ref={groupRef}
+      name="player"
+      position={initialPlayerPositionRef.current}
+      rotation={[0, initialPlayerRotationYRef.current, 0]}
+    >
       <PlayerModel
         transform={selectedCharacter.transform}
         animationState={animationState}

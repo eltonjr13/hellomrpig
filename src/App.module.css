@@ -43,8 +43,17 @@
     right: 12px;
     left: 12px;
     top: 12px;
+    max-width: none;
     flex-wrap: wrap;
     gap: 8px 10px;
+    white-space: normal;
+  }
+}
+
+@media (min-width: 761px) {
+  .hud {
+    max-width: calc(100vw - 408px);
+    flex-wrap: wrap;
     white-space: normal;
   }
 }
