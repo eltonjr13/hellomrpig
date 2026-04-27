@@ -1,0 +1,147 @@
+.toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 8px;
+  background: rgb(9 18 13 / 78%);
+  color: #eef8ef;
+  padding: 10px 12px;
+  font: inherit;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.menu {
+  position: fixed;
+  top: 64px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 21;
+  width: min(390px, calc(100vw - 32px));
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 8px;
+  background: rgb(9 18 13 / 86%);
+  color: #eef8ef;
+  backdrop-filter: blur(12px);
+  font-size: 13px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.header div {
+  display: grid;
+  gap: 3px;
+}
+
+.header span,
+.section h2,
+.statGrid span {
+  color: rgb(238 248 239 / 68%);
+}
+
+.header button,
+.actions button,
+.planetGrid button {
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 7%);
+  color: #eef8ef;
+  padding: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.section {
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid rgb(255 255 255 / 10%);
+}
+
+.section h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.planetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.planetGrid button {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.planetGrid button[data-active="true"] {
+  border-color: rgb(116 198 157 / 80%);
+  background: rgb(116 198 157 / 18%);
+}
+
+.planetGrid small,
+.list small {
+  color: rgb(238 248 239 / 72%);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.statGrid,
+.resourceGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 10px;
+}
+
+.statGrid strong {
+  text-align: right;
+}
+
+.resourceGrid {
+  color: rgb(238 248 239 / 82%);
+}
+
+.list {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.section select {
+  width: 100%;
+  margin-bottom: 10px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 8%);
+  color: #eef8ef;
+  padding: 7px;
+}
+
+@media (max-width: 760px) {
+  .toggle {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  .menu {
+    inset: 12px;
+    width: auto;
+  }
+}

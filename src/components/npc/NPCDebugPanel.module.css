@@ -1,0 +1,90 @@
+.panel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  width: min(360px, calc(100vw - 32px));
+  max-height: 48vh;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 8px;
+  background: rgb(9 18 13 / 78%);
+  backdrop-filter: blur(10px);
+  color: #eef8ef;
+  font-size: 12px;
+}
+
+.header,
+.row,
+.block {
+  display: flex;
+  gap: 8px;
+}
+
+.header,
+.row {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header {
+  margin-bottom: 10px;
+}
+
+.header select {
+  max-width: 160px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 6px;
+  background: rgb(255 255 255 / 8%);
+  color: #eef8ef;
+  padding: 4px 6px;
+}
+
+.block {
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.block span,
+.row span,
+.meter span {
+  color: rgb(238 248 239 / 70%);
+}
+
+.block small {
+  color: rgb(238 248 239 / 82%);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.meter {
+  display: grid;
+  gap: 3px;
+}
+
+.meter div {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 12%);
+}
+
+.meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #74c69d;
+}
+
+@media (max-width: 760px) {
+  .panel {
+    right: 12px;
+    bottom: 146px;
+    width: calc(100vw - 24px);
+  }
+}

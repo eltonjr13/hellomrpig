@@ -5,6 +5,7 @@ import { NpcSystem } from "../components/NpcSystem";
 import { Player } from "../components/player/Player";
 import { SphericalPlanetSurface } from "../components/SphericalPlanetSurface";
 import { SpawnedObjects } from "../components/SpawnedObjects";
+import { WorldSimulationSystem } from "../components/world/WorldSimulationSystem";
 import { useGameStore } from "../store/useGameStore";
 
 const DEBUG_SCENE = false;
@@ -44,6 +45,7 @@ export const MainScene = memo(function MainScene() {
         {planet.type === "organic" ? <OrganicPlanetElements /> : null}
         {planet.type === "social" ? <SocialPlanetElements /> : null}
         <SpawnedObjects />
+        <WorldSimulationSystem />
         <NpcSystem />
         <Player debug={false} />
       </group>
