@@ -1,5 +1,5 @@
 import type { NPCSocietyRole } from "../npc/types";
-import type { ResourceType } from "../simulation/resources/types";
+import type { MineableResourceType } from "../simulation/mining/types";
 import type { StructureType } from "../simulation/village/types";
 
 export const tronTheme = {
@@ -18,12 +18,12 @@ export const tronTheme = {
 
 export const societyNeonPalette = ["#00e5ff", "#247cff", "#ff9f1c", "#d85cff", "#65ff9a", "#f5f749"];
 
-export const resourceColors: Record<ResourceType, string> = {
+export const resourceColors: Record<MineableResourceType, string> = {
   energy: "#00e5ff",
   data: "#247cff",
   matter: "#b9c7d8",
   signal: "#ff9f1c",
-  core: "#d85cff",
+  crystal: "#d85cff",
 };
 
 export const roleGlowColors: Record<NPCSocietyRole, string> = {
@@ -35,6 +35,8 @@ export const roleGlowColors: Record<NPCSocietyRole, string> = {
   connector: "#65ff9a",
   leader: "#f5f749",
   scout: "#247cff",
+  miner: "#eafcff", // maybe a slightly different white or cyan?
+  builder: "#ff9f1c", // same as architect or orange
 };
 
 export const structureColors: Record<StructureType, string> = {

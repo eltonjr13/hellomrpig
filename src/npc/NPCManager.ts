@@ -18,7 +18,7 @@ export class NPCManager {
     let next = updateNeeds(npc, worldState.delta);
     next = updateMood(next);
 
-    if (worldState.now - next.lastDecisionAt >= DECISION_INTERVAL_MS) {
+    if (!next.societyId && worldState.now - next.lastDecisionAt >= DECISION_INTERVAL_MS) {
       const decision = decideNPCAction(next, worldState);
       const reward = estimateReward(next, decision.action);
 

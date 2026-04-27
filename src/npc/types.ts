@@ -2,7 +2,7 @@ export type NPCMoodName = "happy" | "neutral" | "angry" | "sad" | "afraid" | "ex
 export type NPCMemoryType = "player_interaction" | "location_event" | "npc_interaction" | "danger" | "reward";
 export type NPCGoalType = "explore" | "socialize" | "rest" | "avoid" | "protect" | "follow" | "build";
 export type NPCGoalStatus = "active" | "completed" | "failed";
-export type NPCSocietyRole = "wanderer" | "collector" | "architect" | "guardian" | "researcher" | "connector" | "leader" | "scout";
+export type NPCSocietyRole = "wanderer" | "collector" | "architect" | "guardian" | "researcher" | "connector" | "leader" | "scout" | "miner" | "builder";
 export type NPCAction =
   | "wander"
   | "go_to_safe_place"
@@ -109,11 +109,8 @@ export type NPC = {
     assignedBy: "self" | "society" | "leader";
   };
   inventory?: {
-    energy: number;
-    data: number;
-    matter: number;
-    signal: number;
-    core: number;
+    capacity: number;
+    items: Record<string, number>;
   };
   position: NPCPosition;
   targetPosition: NPCPosition;

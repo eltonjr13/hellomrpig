@@ -33,11 +33,11 @@ export class RoleSystem {
 function chooseRole(npc: NPC, society: Society, settlement?: DigitalSettlement): NPCSocietyRole {
   if (society.leaderId === npc.id) return "leader";
   if (settlement?.structures.some((structure) => structure.status !== "completed" && structure.type === "neon_path")) return "connector";
-  if ((settlement?.structures.some((structure) => structure.status !== "completed") ?? false) || npc.role === "builder") return "architect";
+  if ((settlement?.structures.some((structure) => structure.status !== "completed") ?? false) || npc.role === "builder") return "builder";
   if (society.dangerLevel > 45 || npc.personality.aggression > 58) return "guardian";
-  if ((settlement?.storage.energy ?? 0) < 36 || (settlement?.storage.matter ?? 0) < 28 || npc.role === "farmer") return "collector";
+  if ((settlement?.storage.energy ?? 0) < 36 || (settlement?.storage.matter ?? 0) < 28 || npc.role === "farmer") return "miner";
   if ((settlement?.storage.data ?? 0) < 30 || society.culture.innovation < 48) return "researcher";
   if (npc.personality.curiosity > 70) return "scout";
   if (npc.personality.social > 62) return "connector";
-  return "collector";
+  return "miner";
 }

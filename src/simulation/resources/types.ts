@@ -1,6 +1,6 @@
 import type { NPCPosition } from "../../npc/types";
 
-export type ResourceType = "energy" | "data" | "matter" | "signal" | "core";
+export type ResourceType = "energy" | "data" | "matter" | "signal" | "crystal";
 
 export type ResourceInventory = Record<ResourceType, number>;
 
@@ -15,14 +15,14 @@ export type ResourceNode = {
 
 export type EnergyNode = ResourceNode;
 
-export const RESOURCE_TYPES: ResourceType[] = ["energy", "data", "matter", "signal", "core"];
+export const RESOURCE_TYPES: ResourceType[] = ["energy", "data", "matter", "signal", "crystal"];
 
 export const emptyInventory: ResourceInventory = {
   energy: 0,
   data: 0,
   matter: 0,
   signal: 0,
-  core: 0,
+  crystal: 0,
 };
 
 export function normalizeInventory(input?: Partial<Record<string, number>> | null): ResourceInventory {
@@ -38,7 +38,7 @@ export function normalizeInventory(input?: Partial<Record<string, number>> | nul
       valueOf(source, "fiber") * 0.6 +
       valueOf(source, "metal") * 1.5,
     signal: valueOf(source, "signal"),
-    core: valueOf(source, "core"),
+    crystal: valueOf(source, "crystal") + valueOf(source, "core"), // Tratando core antigo como crystal
   };
 }
 

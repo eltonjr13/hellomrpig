@@ -1,11 +1,16 @@
 import type { Society } from "../society/types";
 import { emptyInventory, normalizeInventory } from "../resources/types";
 import type { DigitalSettlement } from "./types";
-import { chooseNextStructure } from "./BuildingPlanner";
-import { advanceConstruction, canPayCost, connectSettlementPaths, createStructure, payCost } from "./ConstructionSystem";
+import { advanceConstruction, connectSettlementPaths, createStructure } from "./ConstructionSystem";
+import { ArchitectSystem } from "../construction/ArchitectSystem";
+import { ConstructionQueue } from "../construction/ConstructionQueue";
+import type { MineableNode } from "../mining/types";
+
+const architectSystem = new ArchitectSystem();
+const constructionQueue = new ConstructionQueue();
 
 export class DigitalSettlementManager {
-  update(planetId: string, societies: Society[], settlements: DigitalSettlement[], deltaSeconds: number) {
+  update(planetId: string, societies: Society[], settlements: DigitalSettlement[], nodes: MineableNode[], deltaSeconds: number) {
     let nextSettlements = settlements.map((settlement) => normalizeSettlement(settlement, societies.find((society) => society.id === settlement.societyId)));
 
     for (const society of societies) {
@@ -36,14 +41,14 @@ export class DigitalSettlementManager {
         nextSettlements.push(settlement);
       }
 
-      settlement = this.updateSettlement(society, settlement, deltaSeconds);
+      settlement = this.updateSettlement(society, settlement, nodes, deltaSeconds);
       nextSettlements = nextSettlements.map((candidate) => (candidate.id === settlement.id ? settlement : candidate));
     }
 
     return nextSettlements;
   }
 
-  private updateSettlement(society: Society, settlement: DigitalSettlement, deltaSeconds: number) {
+  private updateSettlement(society: Society, settlement: DigitalSettlement, nodes: MineableNode[], deltaSeconds: number) {
     const completedCount = (type: DigitalSettlement["structures"][number]["type"]) =>
       settlement.structures.filter((structure) => structure.type === type && structure.status === "completed").length;
 
@@ -62,27 +67,19 @@ export class DigitalSettlementManager {
       },
     };
 
+    // Construções em andamento avançam
     nextSettlement = advanceConstruction(nextSettlement, deltaSeconds);
 
-    const planned = nextSettlement.structures.find((structure) => structure.status === "planned");
-    if (planned && canPayCost(nextSettlement.storage, planned.cost)) {
+    // Usa fila de construção para pagar custos e transitar de planned -> building
+    nextSettlement = constructionQueue.processQueue(nextSettlement, deltaSeconds);
+
+    // Arquiteto planeja nova estrutura se não houver nenhuma em andamento ou planejada
+    const newPlan = architectSystem.planNextStructure(society, nextSettlement, nodes);
+    if (newPlan) {
       nextSettlement = {
         ...nextSettlement,
-        storage: payCost(nextSettlement.storage, planned.cost),
-        structures: nextSettlement.structures.map((structure) =>
-          structure.id === planned.id ? { ...structure, status: "building" as const } : structure,
-        ),
+        structures: [...nextSettlement.structures, newPlan],
       };
-    }
-
-    if (!nextSettlement.structures.some((structure) => structure.status !== "completed")) {
-      const type = chooseNextStructure(society, nextSettlement);
-      if (type) {
-        nextSettlement = {
-          ...nextSettlement,
-          structures: [...nextSettlement.structures, createStructure(type, nextSettlement, nextSettlement.structures.length)],
-        };
-      }
     }
 
     nextSettlement = connectSettlementPaths(nextSettlement);

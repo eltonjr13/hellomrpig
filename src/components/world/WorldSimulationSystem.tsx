@@ -1,7 +1,9 @@
 import { memo, useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { ResourceNodeMesh } from "./ResourceNodeMesh";
-import { BuildingMesh } from "../village/BuildingMesh";
+import { DestroyedNodeMesh } from "./DestroyedNodeMesh";
+import { MineableNodeMesh } from "./MineableNodeMesh";
+import { HologramBuildingMesh } from "../buildings/HologramBuildingMesh";
+import { DigitalBuildingMesh } from "../buildings/DigitalBuildingMesh";
 import { NeonPathMesh } from "../village/NeonPathMesh";
 import { NeonGridGround } from "./NeonGridGround";
 import { useGameStore } from "../../store/useGameStore";
@@ -39,7 +41,11 @@ export const WorldSimulationSystem = memo(function WorldSimulationSystem() {
     <group name="world-simulation">
       <group name="resource-nodes">
         {resources.map((node) => (
-          <ResourceNodeMesh key={node.id} node={node} />
+          node.isDestroyed ? (
+            <DestroyedNodeMesh key={node.id} node={node} />
+          ) : (
+            <MineableNodeMesh key={node.id} node={node} />
+          )
         ))}
       </group>
       <group name="digital-settlements">
@@ -61,12 +67,19 @@ export const WorldSimulationSystem = memo(function WorldSimulationSystem() {
         )}
         {villages.flatMap((settlement) =>
           settlement.structures.map((structure) => (
-            <BuildingMesh
-              key={structure.id}
-              building={structure}
-              color={settlement.neonColor}
-              energyRatio={Math.max(0.08, Math.min(1, settlement.storage.energy / 140))}
-            />
+            structure.status === "planned" ? (
+              <HologramBuildingMesh
+                key={structure.id}
+                structure={structure}
+                color={settlement.neonColor}
+              />
+            ) : (
+              <DigitalBuildingMesh
+                key={structure.id}
+                structure={structure}
+                color={settlement.neonColor}
+              />
+            )
           )),
         )}
       </group>

@@ -48,7 +48,7 @@ export const NPCDebugPanel = memo(function NPCDebugPanel() {
         <div className={styles.block}>
           <span>Inventario</span>
           <small>
-            {Object.entries(npc.inventory)
+            {Object.entries(npc.inventory.items)
               .map(([key, value]) => `${key} ${Math.floor(value)}`)
               .join(" - ")}
           </small>

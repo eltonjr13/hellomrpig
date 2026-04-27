@@ -8,7 +8,7 @@ export function getSocietyStateVector(society: Society, settlement?: DigitalSett
     (settlement?.storage.data ?? society.resources.data) / 250,
     (settlement?.storage.matter ?? society.resources.matter) / 300,
     (settlement?.storage.signal ?? society.resources.signal) / 250,
-    (settlement?.storage.core ?? society.resources.core) / 20,
+    (settlement?.storage.crystal ?? society.resources.crystal) / 20,
     society.dangerLevel / 100,
     society.stability / 100,
     society.culture.cooperation / 100,

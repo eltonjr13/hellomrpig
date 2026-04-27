@@ -19,7 +19,7 @@ export class SocietyManager {
         leaderId,
         territoryCenter: center,
         territoryRadius: 32,
-        resources: { ...emptyInventory, energy: 36, data: 12, matter: 24, signal: 14, core: 1 },
+        resources: { ...emptyInventory, energy: 36, data: 12, matter: 24, signal: 14, crystal: 1 },
         culture: {
           cooperation: 50,
           aggression: 25,
@@ -49,7 +49,7 @@ export class SocietyManager {
     const resources = normalizeInventory(society.resources);
     const wealth = Object.values(resources).reduce((total, value) => total + value, 0);
     const stability = Math.max(0, Math.min(100, culture.cooperation * 0.55 + society.members.length * 4 - society.dangerLevel * 0.25));
-    const techLevel = Math.max(1, Math.min(12, Math.floor(1 + resources.data / 120 + culture.innovation / 38 + resources.core / 5)));
+    const techLevel = Math.max(1, Math.min(12, Math.floor(1 + resources.data / 120 + culture.innovation / 38 + (resources.crystal ?? 0) / 5)));
 
     return {
       ...society,
