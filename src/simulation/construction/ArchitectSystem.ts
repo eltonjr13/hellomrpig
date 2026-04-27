@@ -8,7 +8,8 @@ export class ArchitectSystem {
   planNextStructure(
     society: Society,
     settlement: DigitalSettlement,
-    nodes: MineableNode[]
+    nodes: MineableNode[],
+    radius: number
   ) {
     // Verificar se já existe algo planejado
     if (settlement.structures.some(s => s.status === "planned" || s.status === "building")) {
@@ -18,7 +19,7 @@ export class ArchitectSystem {
     const type = this.chooseNextStructure(society, settlement);
     if (!type) return null;
 
-    const position = findValidBuildPosition(type, settlement.position, settlement.structures, nodes);
+    const position = findValidBuildPosition(type, settlement.position, settlement.structures, nodes, radius);
     
     // Find connection (simplificado)
     const completed = settlement.structures.filter(s => s.status === "completed" && s.type !== "neon_path");

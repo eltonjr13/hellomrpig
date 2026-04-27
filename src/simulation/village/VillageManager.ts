@@ -10,7 +10,7 @@ const architectSystem = new ArchitectSystem();
 const constructionQueue = new ConstructionQueue();
 
 export class DigitalSettlementManager {
-  update(planetId: string, societies: Society[], settlements: DigitalSettlement[], nodes: MineableNode[], deltaSeconds: number) {
+  update(planetId: string, societies: Society[], settlements: DigitalSettlement[], nodes: MineableNode[], deltaSeconds: number, radius: number) {
     let nextSettlements = settlements.map((settlement) => normalizeSettlement(settlement, societies.find((society) => society.id === settlement.societyId)));
 
     for (const society of societies) {
@@ -41,14 +41,14 @@ export class DigitalSettlementManager {
         nextSettlements.push(settlement);
       }
 
-      settlement = this.updateSettlement(society, settlement, nodes, deltaSeconds);
+      settlement = this.updateSettlement(society, settlement, nodes, deltaSeconds, radius);
       nextSettlements = nextSettlements.map((candidate) => (candidate.id === settlement.id ? settlement : candidate));
     }
 
     return nextSettlements;
   }
 
-  private updateSettlement(society: Society, settlement: DigitalSettlement, nodes: MineableNode[], deltaSeconds: number) {
+  private updateSettlement(society: Society, settlement: DigitalSettlement, nodes: MineableNode[], deltaSeconds: number, radius: number) {
     const completedCount = (type: DigitalSettlement["structures"][number]["type"]) =>
       settlement.structures.filter((structure) => structure.type === type && structure.status === "completed").length;
 
@@ -74,7 +74,7 @@ export class DigitalSettlementManager {
     nextSettlement = constructionQueue.processQueue(nextSettlement, deltaSeconds);
 
     // Arquiteto planeja nova estrutura se não houver nenhuma em andamento ou planejada
-    const newPlan = architectSystem.planNextStructure(society, nextSettlement, nodes);
+    const newPlan = architectSystem.planNextStructure(society, nextSettlement, nodes, radius);
     if (newPlan) {
       nextSettlement = {
         ...nextSettlement,

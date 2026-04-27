@@ -41,6 +41,18 @@ export class SocietyManager {
       return [this.updateSocietyCulture(society, npcs)];
     }
 
+    if (societies.length > 0) {
+      const orphans = npcs.filter((npc) => !societies.some((s) => s.members.includes(npc.id)));
+      if (orphans.length > 0) {
+        return societies.map((society, index) => {
+          if (index === 0) {
+            return this.updateSocietyCulture({ ...society, members: [...society.members, ...orphans.map((o) => o.id)] }, npcs);
+          }
+          return this.updateSocietyCulture(society, npcs);
+        });
+      }
+    }
+
     return societies.map((society) => this.updateSocietyCulture(society, npcs));
   }
 

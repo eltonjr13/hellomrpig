@@ -70,7 +70,7 @@ export const useWorldSimulationStore = create<WorldSimulationState>((set, get) =
     resources = destructionSystem.processDestruction(resources);
 
     let societies = societyManager.update(planetId, npcs, state.societies, Date.now());
-    let villages = settlementManager.update(planetId, societies, state.villages, resources, delta);
+    let villages = settlementManager.update(planetId, societies, state.villages, resources, delta, radius);
     societies = attachSettlementData(societies, villages);
     let nextNpcs = roleSystem.assignRoles(npcs, societies, villages);
     const jobResult = npcJobSystem.execute(nextNpcs, resources, societies, villages, radius);
@@ -82,7 +82,7 @@ export const useWorldSimulationStore = create<WorldSimulationState>((set, get) =
     resources = destructionSystem.processDestruction(resources);
 
     societies = jobResult.societies;
-    villages = settlementManager.update(planetId, societies, jobResult.villages, resources, delta);
+    villages = jobResult.villages;
     societies = attachSettlementData(societies, villages);
 
     set({ resources, societies, villages });

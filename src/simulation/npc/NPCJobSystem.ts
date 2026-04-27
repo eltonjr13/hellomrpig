@@ -81,8 +81,16 @@ export class NPCJobSystem {
       // Procurar recursos se não estiver cheio
       const targetType = getTargetResource(npc, settlement);
       const node = nextResources
-        .filter((candidate) => candidate.type === targetType && !candidate.isDestroyed && candidate.amount > 0)
-        .sort((a, b) => distance(a.position, npc.position) - distance(b.position, npc.position))[0];
+        .filter((candidate) => !candidate.isDestroyed && candidate.amount > 0)
+        .sort((a, b) => {
+          const distA = distance(a.position, settlement.position);
+          const distB = distance(b.position, settlement.position);
+          
+          const penaltyA = a.type === targetType ? 0 : 22;
+          const penaltyB = b.type === targetType ? 0 : 22;
+          
+          return (distA + penaltyA) - (distB + penaltyB);
+        })[0];
 
       if (!node) return npc;
 

@@ -1,6 +1,6 @@
 import type { NPCPosition } from "../../npc/types";
 import type { Structure, StructureType } from "../village/types";
-import { distance } from "../resources/ResourceManager";
+import { distance, projectToSphere } from "../resources/ResourceManager";
 import type { MineableNode } from "../mining/types";
 
 const MIN_STRUCTURE_DISTANCE = 3.0;
@@ -9,7 +9,8 @@ export function findValidBuildPosition(
   type: StructureType,
   center: NPCPosition,
   existingStructures: Structure[],
-  mineableNodes: MineableNode[]
+  mineableNodes: MineableNode[],
+  radius: number
 ): NPCPosition {
   // Tentar encontrar uma posição iterativamente
   let bestPos = { ...center };
@@ -26,11 +27,13 @@ export function findValidBuildPosition(
       z: center.z + Math.sin(angle) * dist,
     };
 
-    if (isValidPosition(candidate, existingStructures)) {
-      const score = evaluatePosition(type, candidate, center, mineableNodes);
+    const projectedCandidate = projectToSphere(candidate, radius);
+
+    if (isValidPosition(projectedCandidate, existingStructures)) {
+      const score = evaluatePosition(type, projectedCandidate, center, mineableNodes);
       if (score > bestScore) {
         bestScore = score;
-        bestPos = candidate;
+        bestPos = projectedCandidate;
       }
     }
   }
