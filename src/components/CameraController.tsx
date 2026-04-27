@@ -3,7 +3,6 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Camera, PerspectiveCamera, Vector3 } from "three";
 import { useGameStore } from "../store/useGameStore";
 
-const CAMERA_FOLLOW_TURN_SPEED = 4.5;
 const FIRST_PERSON_EYE_HEIGHT = 1.62;
 const FIRST_PERSON_FORWARD_OFFSET = 0.18;
 const THIRD_PERSON_FOV = 60;
@@ -23,13 +22,10 @@ export const CameraController = memo(function CameraController() {
   useFrame((_, delta) => {
     const {
       playerPosition,
-      playerRotationY,
-      playerIsMoving,
+      playerForward,
       cameraMode,
-      cameraYaw,
       cameraPitch,
       cameraDistance,
-      setCameraOrbit,
       currentWorld,
     } = useGameStore.getState();
 
@@ -43,7 +39,7 @@ export const CameraController = memo(function CameraController() {
       surfaceNormal.normalize();
     }
 
-    tangentForward.set(Math.sin(playerRotationY), 0, Math.cos(playerRotationY));
+    tangentForward.set(playerForward[0], playerForward[1], playerForward[2]);
     tangentForward.addScaledVector(surfaceNormal, -tangentForward.dot(surfaceNormal));
 
     if (tangentForward.lengthSq() < 0.0001) {
@@ -70,15 +66,7 @@ export const CameraController = memo(function CameraController() {
     setCameraFov(camera, THIRD_PERSON_FOV);
     camera.up.copy(surfaceNormal);
 
-    const nextCameraYaw = playerIsMoving
-      ? lerpAngle(cameraYaw, playerRotationY + Math.PI, 1 - Math.exp(-CAMERA_FOLLOW_TURN_SPEED * delta))
-      : cameraYaw;
-
-    if (nextCameraYaw !== cameraYaw) {
-      setCameraOrbit(nextCameraYaw, cameraPitch);
-    }
-
-    tangentForward.set(Math.sin(nextCameraYaw), 0, Math.cos(nextCameraYaw));
+    tangentForward.set(playerForward[0], playerForward[1], playerForward[2]);
     tangentForward.addScaledVector(surfaceNormal, -tangentForward.dot(surfaceNormal));
 
     if (tangentForward.lengthSq() < 0.0001) {
@@ -89,7 +77,7 @@ export const CameraController = memo(function CameraController() {
 
     cameraOffset
       .copy(tangentForward)
-      .multiplyScalar(Math.cos(cameraPitch) * cameraDistance)
+      .multiplyScalar(-Math.cos(cameraPitch) * cameraDistance)
       .addScaledVector(surfaceNormal, Math.sin(cameraPitch) * cameraDistance);
 
     desiredPosition.copy(target).add(cameraOffset);
@@ -100,11 +88,6 @@ export const CameraController = memo(function CameraController() {
 
   return null;
 });
-
-function lerpAngle(from: number, to: number, t: number) {
-  const delta = Math.atan2(Math.sin(to - from), Math.cos(to - from));
-  return from + delta * t;
-}
 
 function setCameraFov(camera: Camera, fov: number) {
   if (!(camera instanceof PerspectiveCamera) || camera.fov === fov) return;

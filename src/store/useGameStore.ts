@@ -11,10 +11,12 @@ export type Vec3Tuple = [number, number, number];
 
 export type PlayerCharacterId = "main" | "samba";
 export type CameraMode = "thirdPerson" | "firstPerson";
+export type VehicleMode = "onFoot" | "airplane";
 
 export type SpawnObject = {
   id: string;
   type: "house" | "tree" | "well" | "market" | "field" | "rock" | "path" | "storage";
+  biome?: string;
   position: Vec3Tuple;
   color: string;
   scale: number | Vec3Tuple;
@@ -40,9 +42,11 @@ type GameState = {
   currentWorld: PlanetWorld;
   worldRevision: number;
   playerPosition: Vec3Tuple;
+  playerForward: Vec3Tuple;
   playerRotationY: number;
   playerIsMoving: boolean;
   selectedCharacterId: PlayerCharacterId;
+  vehicleMode: VehicleMode;
   cameraMode: CameraMode;
   cameraYaw: number;
   cameraPitch: number;
@@ -50,8 +54,9 @@ type GameState = {
   spawnObjects: SpawnObject[];
   npcs: NpcAgent[];
   setCurrentPlanet: (planetId: string) => void;
-  setPlayerTransform: (position: Vec3Tuple, rotationY: number, isMoving: boolean) => void;
+  setPlayerTransform: (position: Vec3Tuple, rotationY: number, isMoving: boolean, forward?: Vec3Tuple) => void;
   setSelectedCharacter: (characterId: PlayerCharacterId) => void;
+  setVehicleMode: (vehicleMode: VehicleMode) => void;
   cycleSelectedCharacter: () => void;
   toggleCameraMode: () => void;
   setCameraOrbit: (yaw: number, pitch: number) => void;
@@ -68,9 +73,11 @@ export const useGameStore = create<GameState>((set) => ({
   currentWorld: initialWorld,
   worldRevision: 0,
   playerPosition: initialWorld.spawnPoint,
+  playerForward: [0, 0, -1],
   playerRotationY: initialWorld.spawnRotationY,
   playerIsMoving: false,
   selectedCharacterId: "main",
+  vehicleMode: "onFoot",
   cameraMode: "thirdPerson",
   cameraYaw: initialWorld.spawnRotationY + Math.PI,
   cameraPitch: 0.42,
@@ -89,8 +96,10 @@ export const useGameStore = create<GameState>((set) => ({
         currentWorld,
         worldRevision: state.worldRevision + 1,
         playerPosition: currentWorld.spawnPoint,
+        playerForward: [0, 0, -1],
         playerRotationY: currentWorld.spawnRotationY,
         playerIsMoving: false,
+        vehicleMode: "onFoot",
         cameraMode: "thirdPerson",
         cameraYaw: currentWorld.spawnRotationY + Math.PI,
         cameraPitch: 0.42,
@@ -99,9 +108,15 @@ export const useGameStore = create<GameState>((set) => ({
         npcs: currentWorld.npcs,
       };
     }),
-  setPlayerTransform: (playerPosition, playerRotationY, playerIsMoving) =>
-    set({ playerPosition, playerRotationY, playerIsMoving }),
+  setPlayerTransform: (playerPosition, playerRotationY, playerIsMoving, playerForward) =>
+    set({
+      playerPosition,
+      playerRotationY,
+      playerIsMoving,
+      ...(playerForward ? { playerForward } : {}),
+    }),
   setSelectedCharacter: (selectedCharacterId) => set({ selectedCharacterId }),
+  setVehicleMode: (vehicleMode) => set({ vehicleMode }),
   cycleSelectedCharacter: () =>
     set((state) => ({
       selectedCharacterId: state.selectedCharacterId === "main" ? "samba" : "main",

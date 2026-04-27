@@ -3,7 +3,7 @@ import { useGameStore } from "../store/useGameStore";
 
 const CAMERA_ZOOM_SENSITIVITY = 0.006;
 const MIN_CAMERA_DISTANCE = 3.5;
-const MAX_CAMERA_DISTANCE = 18;
+const MAX_CAMERA_DISTANCE = 42;
 
 export type PlayerInputState = {
   forward: boolean;
@@ -16,6 +16,8 @@ export type PlayerInputState = {
   actionTwo: boolean;
   switchCharacter: boolean;
   toggleCamera: boolean;
+  toggleFlight: boolean;
+  flyDown: boolean;
 };
 
 const keyMap: Record<string, keyof PlayerInputState> = {
@@ -30,12 +32,15 @@ const keyMap: Record<string, keyof PlayerInputState> = {
   Space: "jump",
   ShiftLeft: "run",
   ShiftRight: "run",
+  ControlLeft: "flyDown",
+  ControlRight: "flyDown",
   Digit1: "actionOne",
   Numpad1: "actionOne",
   Digit2: "actionTwo",
   Numpad2: "actionTwo",
   KeyC: "switchCharacter",
   KeyV: "toggleCamera",
+  KeyF: "toggleFlight",
 };
 
 export function usePlayerControls() {
@@ -50,6 +55,8 @@ export function usePlayerControls() {
     actionTwo: false,
     switchCharacter: false,
     toggleCamera: false,
+    toggleFlight: false,
+    flyDown: false,
   });
 
   const cameraYawRef = useRef(useGameStore.getState().cameraYaw);

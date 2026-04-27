@@ -10,8 +10,10 @@ export default function App() {
   const npcCount = useGameStore((state) => state.npcs.length);
   const spawnedCount = useGameStore((state) => state.spawnObjects.length);
   const selectedCharacterId = useGameStore((state) => state.selectedCharacterId);
+  const vehicleMode = useGameStore((state) => state.vehicleMode);
   const cameraMode = useGameStore((state) => state.cameraMode);
   const selectedCharacterName = selectedCharacterId === "samba" ? "Samba" : "Morador";
+  const vehicleModeLabel = vehicleMode === "airplane" ? "Aviao" : "A pe";
   const cameraModeLabel = cameraMode === "firstPerson" ? "1a pessoa" : "3a pessoa";
 
   return (
@@ -31,10 +33,11 @@ export default function App() {
         <strong>Village Simulation</strong>
         <span>Planeta: {currentPlanet.name}</span>
         <span>Personagem: {selectedCharacterName}</span>
+        <span>Modo: {vehicleModeLabel}</span>
         <span>Camera: {cameraModeLabel}</span>
         <span>Habitantes: {npcCount}</span>
         <span>Estruturas: {spawnedCount}</span>
-        <span>C troca / V camera</span>
+        <span>F aviao / Shift turbo / Ctrl desce</span>
       </section>
 
       <PlanetSelector />
