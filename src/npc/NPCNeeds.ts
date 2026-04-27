@@ -8,7 +8,7 @@ export function updateNeeds(npc: NPC, deltaSeconds: number) {
     energy: npc.needs.energy - deltaSeconds * (npc.currentAction === "rest" ? -5.5 : 0.45),
     hunger: npc.needs.hunger - deltaSeconds * 0.22,
     social: npc.needs.social - deltaSeconds * (npc.currentAction === "talk_to_npc" ? -3.4 : 0.18),
-    safety: npc.needs.safety - deltaSeconds * (npc.currentAction === "avoid_player" ? -1.5 : 0.08),
+    safety: npc.needs.safety - deltaSeconds * (npc.currentAction === "avoid_player" || npc.currentAction === "protect" ? -1.5 : 0.08),
     purpose: npc.needs.purpose - deltaSeconds * (npc.currentAction === "explore_area" ? -1.2 : 0.12),
   };
 

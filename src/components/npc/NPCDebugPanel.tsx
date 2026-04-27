@@ -25,7 +25,9 @@ export const NPCDebugPanel = memo(function NPCDebugPanel() {
 
       <div className={styles.row}>
         <span>Humor</span>
-        <strong>{npc.mood.current} {Math.round(npc.mood.intensity * 100)}%</strong>
+        <strong>
+          {npc.mood.current} {Math.round(npc.mood.intensity * 100)}%
+        </strong>
       </div>
       <div className={styles.row}>
         <span>Acao</span>
@@ -46,15 +48,18 @@ export const NPCDebugPanel = memo(function NPCDebugPanel() {
         <div className={styles.block}>
           <span>Inventario</span>
           <small>
-            madeira {Math.floor(npc.inventory.wood)} · pedra {Math.floor(npc.inventory.stone)} · comida{" "}
-            {Math.floor(npc.inventory.food)}
+            {Object.entries(npc.inventory)
+              .map(([key, value]) => `${key} ${Math.floor(value)}`)
+              .join(" - ")}
           </small>
         </div>
       ) : null}
 
       <div className={styles.block}>
         <span>Objetivo</span>
-        <strong>{npc.goals[0]?.type ?? "none"} · {npc.goals[0]?.priority ?? 0}</strong>
+        <strong>
+          {npc.goals[0]?.type ?? "none"} - {npc.goals[0]?.priority ?? 0}
+        </strong>
       </div>
 
       <div className={styles.block}>

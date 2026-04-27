@@ -10,10 +10,10 @@ export const SocietyDebugPanel = memo(function SocietyDebugPanel() {
   const society = societies[0];
 
   return (
-    <section className={styles.panel} aria-label="Society debug">
+    <section className={styles.panel} aria-label="Digital society debug">
       <header>
-        <strong>{society?.name ?? "Sem sociedade"}</strong>
-        <span>{resources.length} recursos</span>
+        <strong>{society?.name ?? "Sem sociedade digital"}</strong>
+        <span>{resources.length} energy nodes</span>
       </header>
       {society ? (
         <>
@@ -24,6 +24,10 @@ export const SocietyDebugPanel = memo(function SocietyDebugPanel() {
           <div className={styles.row}>
             <span>Membros</span>
             <strong>{society.members.length}</strong>
+          </div>
+          <div className={styles.row}>
+            <span>Tech</span>
+            <strong>{society.techLevel}</strong>
           </div>
           <div className={styles.grid}>
             {Object.entries(society.culture).map(([key, value]) => (
@@ -37,7 +41,7 @@ export const SocietyDebugPanel = memo(function SocietyDebugPanel() {
           </div>
         </>
       ) : (
-        <small>NPCs proximos vao formar sociedade automaticamente.</small>
+        <small>NPCs proximos vao formar uma matriz digital automaticamente.</small>
       )}
     </section>
   );

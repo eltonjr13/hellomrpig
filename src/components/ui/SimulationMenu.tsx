@@ -23,7 +23,7 @@ export const SimulationMenu = memo(function SimulationMenu() {
   const resetSimulation = useWorldSimulationStore((state) => state.resetSimulation);
   const npc = npcs.find((candidate) => candidate.id === selectedNpcId) ?? npcs[0];
   const society = societies[0];
-  const village = villages[0];
+  const settlement = villages[0];
 
   return (
     <>
@@ -89,25 +89,25 @@ export const SimulationMenu = memo(function SimulationMenu() {
               <strong>{npcs.find((candidate) => candidate.id === society?.leaderId)?.name ?? "nenhum"}</strong>
               <span>Recursos</span>
               <strong>{resources.length}</strong>
-              <span>Vila</span>
-              <strong>{village ? `nivel ${village.level}` : "sem vila"}</strong>
+              <span>Cidade</span>
+              <strong>{settlement ? `nivel ${settlement.level}` : "sem core"}</strong>
             </div>
           </section>
 
-          {village ? (
+          {settlement ? (
             <section className={styles.section}>
-              <h2>Storage</h2>
+              <h2>Storage digital</h2>
               <div className={styles.resourceGrid}>
-                {Object.entries(village.storage).map(([key, value]) => (
+                {Object.entries(settlement.storage).map(([key, value]) => (
                   <span key={key}>
                     {key}: {Math.floor(value)}
                   </span>
                 ))}
               </div>
               <div className={styles.list}>
-                {village.buildings.slice(-4).map((building) => (
-                  <small key={building.id}>
-                    {building.type} - {building.status} - {Math.round(building.progress)}%
+                {settlement.structures.slice(-4).map((structure) => (
+                  <small key={structure.id}>
+                    {structure.type} - {structure.status} - {Math.round(structure.progress)}%
                   </small>
                 ))}
               </div>

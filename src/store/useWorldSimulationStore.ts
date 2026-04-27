@@ -4,16 +4,17 @@ import { NPCJobSystem } from "../simulation/npc/NPCJobSystem";
 import { RoleSystem } from "../simulation/npc/RoleSystem";
 import { ResourceManager } from "../simulation/resources/ResourceManager";
 import type { ResourceNode } from "../simulation/resources/types";
+import { normalizeInventory } from "../simulation/resources/types";
 import { SocietyManager } from "../simulation/society/SocietyManager";
 import type { Society } from "../simulation/society/types";
-import { VillageManager } from "../simulation/village/VillageManager";
-import type { Village } from "../simulation/village/types";
+import { DigitalSettlementManager } from "../simulation/village/VillageManager";
+import type { DigitalSettlement } from "../simulation/village/types";
 
 type WorldSimulationState = {
   planetId: string | null;
   resources: ResourceNode[];
   societies: Society[];
-  villages: Village[];
+  villages: DigitalSettlement[];
   speedMultiplier: number;
   lastSavedAt: number;
   initialize: (planetId: string, radius: number) => void;
@@ -25,7 +26,7 @@ type WorldSimulationState = {
 
 const resourceManager = new ResourceManager();
 const societyManager = new SocietyManager();
-const villageManager = new VillageManager();
+const settlementManager = new DigitalSettlementManager();
 const roleSystem = new RoleSystem();
 const npcJobSystem = new NPCJobSystem();
 
@@ -63,14 +64,16 @@ export const useWorldSimulationStore = create<WorldSimulationState>((set, get) =
     const delta = state.speedMultiplier;
     let resources = resourceManager.update(state.resources, delta);
     let societies = societyManager.update(planetId, npcs, state.societies, Date.now());
-    let villages = villageManager.update(planetId, societies, state.villages, delta);
+    let villages = settlementManager.update(planetId, societies, state.villages, delta);
+    societies = attachSettlementData(societies, villages);
     let nextNpcs = roleSystem.assignRoles(npcs, societies, villages);
     const jobResult = npcJobSystem.execute(nextNpcs, resources, societies, villages, radius);
 
     nextNpcs = jobResult.npcs;
     resources = jobResult.resources;
     societies = jobResult.societies;
-    villages = villageManager.update(planetId, societies, jobResult.villages, delta);
+    villages = settlementManager.update(planetId, societies, jobResult.villages, delta);
+    societies = attachSettlementData(societies, villages);
 
     set({ resources, societies, villages });
     setNPCs(nextNpcs);
@@ -125,5 +128,18 @@ function clearStoredSimulation(planetId: string) {
 }
 
 function getStorageKey(planetId: string) {
-  return `hellomrpig:world-simulation:${planetId}`;
+  return `hellomrpig:world-simulation:v2:${planetId}`;
+}
+
+function attachSettlementData(societies: Society[], settlements: DigitalSettlement[]) {
+  return societies.map((society) => {
+    const settlement = settlements.find((candidate) => candidate.societyId === society.id);
+    return {
+      ...society,
+      resources: normalizeInventory(society.resources),
+      coreNodeId: settlement?.coreStructureId ?? society.coreNodeId,
+      neonColor: settlement?.neonColor ?? society.neonColor,
+      techLevel: Math.max(society.techLevel, settlement?.techLevel ?? 1),
+    };
+  });
 }

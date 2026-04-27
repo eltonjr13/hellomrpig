@@ -2,6 +2,8 @@ import { memo, useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { ResourceNodeMesh } from "./ResourceNodeMesh";
 import { BuildingMesh } from "../village/BuildingMesh";
+import { NeonPathMesh } from "../village/NeonPathMesh";
+import { NeonGridGround } from "./NeonGridGround";
 import { useGameStore } from "../../store/useGameStore";
 import { useNPCStore } from "../../store/useNPCStore";
 import { useWorldSimulationStore } from "../../store/useWorldSimulationStore";
@@ -40,7 +42,7 @@ export const WorldSimulationSystem = memo(function WorldSimulationSystem() {
           <ResourceNodeMesh key={node.id} node={node} />
         ))}
       </group>
-      <group name="villages">
+      <group name="digital-settlements">
         {societies.map((society) => (
           <mesh
             key={society.id}
@@ -48,11 +50,24 @@ export const WorldSimulationSystem = memo(function WorldSimulationSystem() {
             rotation={[-Math.PI / 2, 0, 0]}
           >
             <ringGeometry args={[society.territoryRadius * 0.96, society.territoryRadius, 96]} />
-            <meshBasicMaterial color="#74c69d" transparent opacity={0.28} />
+            <meshBasicMaterial color={society.neonColor} transparent opacity={0.22} />
           </mesh>
         ))}
-        {villages.flatMap((village) =>
-          village.buildings.map((building) => <BuildingMesh key={building.id} building={building} />),
+        {villages.map((settlement) => (
+          <NeonGridGround key={`${settlement.id}-grid`} position={settlement.position} radius={Math.min(18, 8 + settlement.level * 3.5)} color={settlement.neonColor} />
+        ))}
+        {villages.flatMap((settlement) =>
+          settlement.paths.map((path) => <NeonPathMesh key={path.id} path={path} />),
+        )}
+        {villages.flatMap((settlement) =>
+          settlement.structures.map((structure) => (
+            <BuildingMesh
+              key={structure.id}
+              building={structure}
+              color={settlement.neonColor}
+              energyRatio={Math.max(0.08, Math.min(1, settlement.storage.energy / 140))}
+            />
+          )),
         )}
       </group>
     </group>

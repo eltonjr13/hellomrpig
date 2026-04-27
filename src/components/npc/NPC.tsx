@@ -3,6 +3,7 @@ import { Matrix4, Quaternion, Vector3 } from "three";
 import type { NPC as NPCState } from "../../npc/types";
 import { useGameStore } from "../../store/useGameStore";
 import { useNPCStore } from "../../store/useNPCStore";
+import { roleGlowColors } from "../../theme/tronTheme";
 
 type NPCProps = {
   npc: NPCState;
@@ -12,6 +13,7 @@ export const NPC = memo(function NPC({ npc }: NPCProps) {
   const selectNPC = useNPCStore((state) => state.selectNPC);
   const radius = useGameStore((state) => state.currentWorld.radius);
   const quaternion = useMemo(() => getSurfaceQuaternion(npc, radius), [npc.position.x, npc.position.y, npc.position.z, radius]);
+  const roleColor = roleGlowColors[npc.societyRole?.type ?? "wanderer"] ?? roleGlowColors.wanderer;
 
   return (
     <group
@@ -25,11 +27,15 @@ export const NPC = memo(function NPC({ npc }: NPCProps) {
     >
       <mesh castShadow receiveShadow>
         <capsuleGeometry args={[0.34, 1.18, 6, 12]} />
-        <meshStandardMaterial color={getMoodColor(npc.mood.current)} roughness={0.72} />
+        <meshStandardMaterial color={getMoodColor(npc.mood.current)} emissive={roleColor} emissiveIntensity={0.35} roughness={0.54} />
       </mesh>
       <mesh castShadow position={[0, 1.04, 0]}>
         <sphereGeometry args={[0.18, 12, 12]} />
         <meshStandardMaterial color="#233a2d" roughness={0.62} />
+      </mesh>
+      <mesh position={[0, 0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.46, 0.52, 24]} />
+        <meshBasicMaterial color={roleColor} transparent opacity={0.82} />
       </mesh>
       <mesh position={[0, 1.42, 0]}>
         <ringGeometry args={[0.26, 0.3, 18]} />
@@ -72,5 +78,6 @@ function getActionColor(action: NPCState["currentAction"]) {
   if (action === "approach_player" || action === "follow_player") return "#4dabf7";
   if (action === "rest") return "#b197fc";
   if (action === "explore_area") return "#69db7c";
+  if (action === "protect") return "#ff3f71";
   return "#f8f9fa";
 }

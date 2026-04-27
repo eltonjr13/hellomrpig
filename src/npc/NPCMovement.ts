@@ -9,7 +9,7 @@ export function chooseTargetForAction(npc: NPC, action: NPCAction, worldState: N
     return moveAwayFrom(npc.position, worldState.player.position, 16, worldState.planetRadius);
   }
 
-  if (action === "rest" || action === "return_home") {
+  if (action === "rest" || action === "return_home" || action === "protect") {
     return npc.homePosition;
   }
 

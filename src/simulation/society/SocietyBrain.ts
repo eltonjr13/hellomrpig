@@ -1,13 +1,14 @@
 import type { Society } from "./types";
-import type { Village } from "../village/types";
+import type { DigitalSettlement } from "../village/types";
 
-export function getSocietyStateVector(society: Society, village?: Village) {
+export function getSocietyStateVector(society: Society, settlement?: DigitalSettlement) {
   return [
     society.members.length / 20,
-    (village?.storage.food ?? society.resources.food) / 200,
-    (village?.storage.water ?? society.resources.water) / 200,
-    society.resources.wood / 250,
-    society.resources.stone / 250,
+    (settlement?.storage.energy ?? society.resources.energy) / 250,
+    (settlement?.storage.data ?? society.resources.data) / 250,
+    (settlement?.storage.matter ?? society.resources.matter) / 300,
+    (settlement?.storage.signal ?? society.resources.signal) / 250,
+    (settlement?.storage.core ?? society.resources.core) / 20,
     society.dangerLevel / 100,
     society.stability / 100,
     society.culture.cooperation / 100,
@@ -16,7 +17,7 @@ export function getSocietyStateVector(society: Society, village?: Village) {
   ];
 }
 
-export function chooseSocietyActionByPolicy(society: Society, village?: Village) {
-  void getSocietyStateVector(society, village);
+export function chooseSocietyActionByPolicy(society: Society, settlement?: DigitalSettlement) {
+  void getSocietyStateVector(society, settlement);
   return null;
 }

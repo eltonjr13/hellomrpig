@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { useGameStore, type SpawnObject } from "../store/useGameStore";
+import { tronTheme } from "../theme/tronTheme";
 
 export const SpawnedObjects = memo(function SpawnedObjects() {
   const spawnObjects = useGameStore((state) => state.spawnObjects);
@@ -31,17 +32,13 @@ function renderObjectGeometry(object: SpawnObject) {
     case "house":
       return (
         <>
-          <mesh castShadow receiveShadow position={[0, 0, 0]}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color={object.color} roughness={0.78} />
+          <mesh castShadow receiveShadow position={[0, 0.18, 0]}>
+            <capsuleGeometry args={[0.34, 0.72, 4, 10]} />
+            <meshStandardMaterial color={tronTheme.glass} emissive={object.color} emissiveIntensity={0.7} metalness={0.38} roughness={0.22} />
           </mesh>
-          <mesh castShadow receiveShadow position={[0, 0.68, 0]} rotation={[0, Math.PI / 4, 0]}>
-            <coneGeometry args={[0.78, 0.55, 4]} />
-            <meshStandardMaterial color="#6d3f2a" roughness={0.82} />
-          </mesh>
-          <mesh position={[0, -0.18, -0.51]}>
-            <boxGeometry args={[0.22, 0.36, 0.03]} />
-            <meshStandardMaterial color="#3d2b1f" roughness={0.8} />
+          <mesh position={[0, -0.32, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[0.52, 0.6, 28]} />
+            <meshBasicMaterial color={object.color} transparent opacity={0.7} />
           </mesh>
         </>
       );
@@ -61,34 +58,26 @@ function renderObjectGeometry(object: SpawnObject) {
     case "well":
       return (
         <>
-          <mesh castShadow receiveShadow position={[0, 0.25, 0]}>
-            <cylinderGeometry args={[0.6, 0.68, 0.5, 18]} />
-            <meshStandardMaterial color={object.color} roughness={0.9} />
+          <mesh castShadow receiveShadow position={[0, 0.42, 0]}>
+            <octahedronGeometry args={[0.48, 0]} />
+            <meshStandardMaterial color={tronTheme.glass} emissive={object.color} emissiveIntensity={1.7} metalness={0.46} roughness={0.18} />
           </mesh>
-          <mesh castShadow receiveShadow position={[0, 0.62, 0]}>
-            <torusGeometry args={[0.52, 0.08, 8, 18]} />
-            <meshStandardMaterial color="#ced4da" roughness={0.8} />
+          <mesh position={[0, 0.42, 0]}>
+            <torusGeometry args={[0.68, 0.035, 8, 36]} />
+            <meshBasicMaterial color={object.color} transparent opacity={0.86} />
           </mesh>
         </>
       );
     case "market":
       return (
         <>
-          <mesh castShadow receiveShadow position={[0, -0.1, 0]}>
-            <boxGeometry args={[1, 0.55, 1]} />
-            <meshStandardMaterial color="#d8f3dc" roughness={0.72} />
+          <mesh castShadow receiveShadow position={[0, 0.24, 0]}>
+            <cylinderGeometry args={[0.58, 0.72, 0.52, 12]} />
+            <meshStandardMaterial color={tronTheme.panel} emissive={object.color} emissiveIntensity={0.8} metalness={0.44} roughness={0.2} />
           </mesh>
-          <mesh castShadow receiveShadow position={[0, 0.38, 0]}>
-            <boxGeometry args={[1.12, 0.12, 1.1]} />
-            <meshStandardMaterial color={object.color} roughness={0.65} />
-          </mesh>
-          <mesh castShadow receiveShadow position={[-0.36, 0.05, -0.35]}>
-            <boxGeometry args={[0.08, 0.68, 0.08]} />
-            <meshStandardMaterial color="#6d4c41" roughness={0.8} />
-          </mesh>
-          <mesh castShadow receiveShadow position={[0.36, 0.05, -0.35]}>
-            <boxGeometry args={[0.08, 0.68, 0.08]} />
-            <meshStandardMaterial color="#6d4c41" roughness={0.8} />
+          <mesh position={[0, 0.78, 0]}>
+            <torusGeometry args={[0.74, 0.035, 8, 42]} />
+            <meshBasicMaterial color={object.color} transparent opacity={0.8} />
           </mesh>
         </>
       );
@@ -97,12 +86,12 @@ function renderObjectGeometry(object: SpawnObject) {
         <>
           <mesh receiveShadow position={[0, 0, 0]}>
             <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color={object.color} roughness={0.95} />
+            <meshStandardMaterial color={tronTheme.ground} emissive={object.color} emissiveIntensity={0.24} roughness={0.36} metalness={0.28} />
           </mesh>
           {[-0.32, 0, 0.32].map((x) => (
             <mesh key={x} receiveShadow position={[x, 0.56, 0]}>
               <boxGeometry args={[0.06, 0.08, 0.9]} />
-              <meshStandardMaterial color="#5a7d2a" roughness={0.9} />
+              <meshBasicMaterial color={object.color} transparent opacity={0.74} />
             </mesh>
           ))}
         </>
@@ -111,7 +100,7 @@ function renderObjectGeometry(object: SpawnObject) {
       return (
         <mesh receiveShadow>
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color={object.color} roughness={0.96} />
+          <meshStandardMaterial color={tronTheme.ground} emissive={object.color} emissiveIntensity={0.32} roughness={0.42} metalness={0.34} />
         </mesh>
       );
     case "rock":
@@ -125,7 +114,7 @@ function renderObjectGeometry(object: SpawnObject) {
       return (
         <mesh castShadow receiveShadow>
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color={object.color} roughness={0.8} />
+          <meshStandardMaterial color={tronTheme.panel} emissive={object.color} emissiveIntensity={0.9} metalness={0.5} roughness={0.24} />
         </mesh>
       );
   }

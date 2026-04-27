@@ -1,9 +1,9 @@
 import type { NPC, NPCSocietyRole } from "../../npc/types";
 import type { Society } from "../society/types";
-import type { Village } from "../village/types";
+import type { DigitalSettlement } from "../village/types";
 
 export class RoleSystem {
-  assignRoles(npcs: NPC[], societies: Society[], villages: Village[]): NPC[] {
+  assignRoles(npcs: NPC[], societies: Society[], settlements: DigitalSettlement[]): NPC[] {
     return npcs.map((npc) => {
       const society = societies.find((candidate) => candidate.members.includes(npc.id));
       if (!society) {
@@ -14,8 +14,8 @@ export class RoleSystem {
         };
       }
 
-      const village = villages.find((candidate) => candidate.societyId === society.id);
-      const role = chooseRole(npc, society, village);
+      const settlement = settlements.find((candidate) => candidate.societyId === society.id);
+      const role = chooseRole(npc, society, settlement);
 
       return {
         ...npc,
@@ -30,12 +30,14 @@ export class RoleSystem {
   }
 }
 
-function chooseRole(npc: NPC, society: Society, village?: Village): NPCSocietyRole {
+function chooseRole(npc: NPC, society: Society, settlement?: DigitalSettlement): NPCSocietyRole {
   if (society.leaderId === npc.id) return "leader";
-  if ((village?.storage.food ?? 0) < 35 || npc.role === "farmer") return "farmer";
-  if ((village?.buildings.some((building) => building.status !== "completed") ?? false) || npc.role === "builder") return "builder";
-  if (society.dangerLevel > 45 || npc.personality.aggression > 58) return "guard";
+  if (settlement?.structures.some((structure) => structure.status !== "completed" && structure.type === "neon_path")) return "connector";
+  if ((settlement?.structures.some((structure) => structure.status !== "completed") ?? false) || npc.role === "builder") return "architect";
+  if (society.dangerLevel > 45 || npc.personality.aggression > 58) return "guardian";
+  if ((settlement?.storage.energy ?? 0) < 36 || (settlement?.storage.matter ?? 0) < 28 || npc.role === "farmer") return "collector";
+  if ((settlement?.storage.data ?? 0) < 30 || society.culture.innovation < 48) return "researcher";
   if (npc.personality.curiosity > 70) return "scout";
-  if (npc.personality.social > 62) return "gatherer";
-  return "gatherer";
+  if (npc.personality.social > 62) return "connector";
+  return "collector";
 }

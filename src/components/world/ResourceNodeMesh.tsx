@@ -1,38 +1,33 @@
 import { memo } from "react";
 import type { ResourceNode } from "../../simulation/resources/types";
+import { resourceColors, tronTheme } from "../../theme/tronTheme";
 
 export const ResourceNodeMesh = memo(function ResourceNodeMesh({ node }: { node: ResourceNode }) {
   const opacity = Math.max(0.25, node.amount / node.maxAmount);
+  const color = resourceColors[node.type];
 
   return (
     <group position={[node.position.x, node.position.y, node.position.z]} scale={0.8 + opacity * 0.7}>
-      {node.type === "wood" ? (
-        <>
-          <mesh castShadow receiveShadow position={[0, 0.45, 0]}>
-            <cylinderGeometry args={[0.12, 0.18, 0.9, 8]} />
-            <meshStandardMaterial color="#6f4e37" />
-          </mesh>
-          <mesh castShadow receiveShadow position={[0, 1.08, 0]}>
-            <sphereGeometry args={[0.44, 12, 10]} />
-            <meshStandardMaterial color="#2d6a4f" transparent opacity={opacity} />
-          </mesh>
-        </>
-      ) : node.type === "stone" || node.type === "metal" ? (
-        <mesh castShadow receiveShadow position={[0, 0.22, 0]}>
-          <dodecahedronGeometry args={[0.48, 0]} />
-          <meshStandardMaterial color={node.type === "metal" ? "#adb5bd" : "#6c757d"} metalness={node.type === "metal" ? 0.35 : 0} />
-        </mesh>
-      ) : node.type === "water" ? (
-        <mesh receiveShadow position={[0, 0.03, 0]}>
-          <cylinderGeometry args={[0.75, 0.75, 0.06, 24]} />
-          <meshStandardMaterial color="#4dabf7" transparent opacity={0.72} />
-        </mesh>
-      ) : (
-        <mesh castShadow receiveShadow position={[0, 0.24, 0]}>
-          <sphereGeometry args={[0.34, 10, 8]} />
-          <meshStandardMaterial color={node.type === "food" ? "#95d5b2" : "#d8f3dc"} transparent opacity={opacity} />
-        </mesh>
-      )}
+      <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.72, 0.78, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.52 * opacity} />
+      </mesh>
+      <mesh castShadow receiveShadow position={[0, 0.42, 0]}>
+        {node.type === "core" ? <icosahedronGeometry args={[0.44, 0]} /> : <octahedronGeometry args={[0.46, 0]} />}
+        <meshStandardMaterial
+          color={node.type === "matter" ? tronTheme.panel : color}
+          emissive={color}
+          emissiveIntensity={node.type === "matter" ? 0.8 : 1.8}
+          metalness={node.type === "matter" ? 0.45 : 0.2}
+          roughness={0.28}
+          transparent
+          opacity={0.68 + opacity * 0.28}
+        />
+      </mesh>
+      <mesh position={[0, 0.42, 0]}>
+        <torusGeometry args={[0.64, 0.025, 6, 32]} />
+        <meshBasicMaterial color={color} transparent opacity={0.85 * opacity} />
+      </mesh>
     </group>
   );
 });

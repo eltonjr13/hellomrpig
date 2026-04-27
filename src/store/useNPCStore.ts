@@ -40,8 +40,8 @@ export const useNPCStore = create<NPCStore>((set, get) => ({
         targetPosition: [index * 2 + 5, 0, -index * 2 - 7],
         mood: "idle",
         aiProfile: {
-          goal: "Encontrar um grupo social e contribuir para a vila.",
-          memory: ["Chegou ao planeta procurando uma comunidade."],
+          goal: "Encontrar uma matriz social e contribuir para a cidade digital.",
+          memory: ["Chegou ao planeta procurando uma civilizacao digital."],
         },
       };
       const npc = createNPCFromAgent(agent, planetId, radius, index);

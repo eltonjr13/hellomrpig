@@ -1,7 +1,7 @@
 import type { NPCPosition } from "../../npc/types";
 import type { ResourceInventory } from "../resources/types";
 
-export type Society = {
+export type DigitalSociety = {
   id: string;
   name: string;
   planetId: string;
@@ -20,5 +20,12 @@ export type Society = {
   stability: number;
   wealth: number;
   dangerLevel: number;
+  neonColor: string;
+  techLevel: number;
+  signalReach: number;
+  coreNodeId: string | null;
+  collectiveMemory: string[];
   createdAt: number;
 };
+
+export type Society = DigitalSociety;

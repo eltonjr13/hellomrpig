@@ -26,7 +26,7 @@ export default function App() {
       </Canvas>
 
       <section className={styles.hud} aria-label="Game status">
-        <strong>Village Simulation</strong>
+        <strong>Digital Civilization</strong>
         <span>Planeta: {currentPlanet.name}</span>
         <span>Modo: {vehicleModeLabel}</span>
         <span>Habitantes: {npcCount}</span>

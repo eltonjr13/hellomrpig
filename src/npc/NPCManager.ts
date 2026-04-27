@@ -64,6 +64,7 @@ function estimateReward(npc: NPC, action: NPC["currentAction"]) {
 }
 
 function actionToGoal(action: NPC["currentAction"]): NPC["goals"][number]["type"] {
+  if (action === "protect") return "protect";
   if (action === "rest" || action === "return_home") return "rest";
   if (action === "approach_player" || action === "talk_to_npc") return "socialize";
   if (action === "avoid_player" || action === "go_to_safe_place") return "avoid";

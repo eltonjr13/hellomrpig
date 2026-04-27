@@ -1,7 +1,7 @@
 import type { NPC } from "../../npc/types";
-import type { ResourceNode } from "../resources/types";
+import type { ResourceNode, ResourceType } from "../resources/types";
 import type { Society } from "../society/types";
-import type { Village } from "../village/types";
+import type { DigitalSettlement } from "../village/types";
 import { distance, projectToSphere } from "../resources/ResourceManager";
 import { addToInventory, clearInventory, ensureInventory, getInventoryLoad } from "./NPCInventory";
 
@@ -9,32 +9,50 @@ export type NPCJobResult = {
   npcs: NPC[];
   resources: ResourceNode[];
   societies: Society[];
-  villages: Village[];
+  villages: DigitalSettlement[];
 };
 
 const CARRY_LIMIT = 18;
 
 export class NPCJobSystem {
-  execute(npcs: NPC[], resources: ResourceNode[], societies: Society[], villages: Village[], radius: number): NPCJobResult {
+  execute(npcs: NPC[], resources: ResourceNode[], societies: Society[], settlements: DigitalSettlement[], radius: number): NPCJobResult {
     let nextResources = resources;
     let nextSocieties = societies;
-    let nextVillages = villages;
+    let nextSettlements = settlements;
 
     const nextNpcs = npcs.map((rawNpc) => {
       let npc = ensureInventory(rawNpc);
       const society = nextSocieties.find((candidate) => candidate.id === npc.societyId);
-      const village = society ? nextVillages.find((candidate) => candidate.societyId === society.id) : null;
-      if (!society || !village) return npc;
+      const settlement = society ? nextSettlements.find((candidate) => candidate.societyId === society.id) : null;
+      if (!society || !settlement) return npc;
 
-      if (getInventoryLoad(npc) >= CARRY_LIMIT || distance(npc.position, village.position) < 3.2) {
+      if (npc.societyRole?.type === "guardian") {
+        return {
+          ...npc,
+          currentAction: "protect" as const,
+          targetPosition: settlement.position,
+        };
+      }
+
+      const buildTarget = getBuildTarget(npc, settlement);
+      if (buildTarget && getInventoryLoad(npc) === 0) {
+        return {
+          ...npc,
+          currentAction: "explore_area" as const,
+          targetPosition: projectToSphere(buildTarget.position, radius),
+        };
+      }
+
+      const inventoryLoad = getInventoryLoad(npc);
+      if (inventoryLoad > 0 && (inventoryLoad >= CARRY_LIMIT || distance(npc.position, settlement.position) < 3.2)) {
         const [emptyNpc, delivered] = clearInventory(npc);
         npc = {
           ...emptyNpc,
-          targetPosition: village.position,
+          targetPosition: settlement.position,
           currentAction: "return_home" as const,
         };
-        nextVillages = nextVillages.map((candidate) =>
-          candidate.id === village.id
+        nextSettlements = nextSettlements.map((candidate) =>
+          candidate.id === settlement.id
             ? { ...candidate, storage: addInventory(candidate.storage, delivered), growthScore: candidate.growthScore + 1 }
             : candidate,
         );
@@ -44,7 +62,7 @@ export class NPCJobSystem {
         return npc;
       }
 
-      const targetType = getNeededResource(village);
+      const targetType = getTargetResource(npc, settlement);
       const node = nextResources
         .filter((candidate) => candidate.type === targetType && candidate.amount > 1)
         .sort((a, b) => distance(a.position, npc.position) - distance(b.position, npc.position))[0];
@@ -66,13 +84,26 @@ export class NPCJobSystem {
       };
     });
 
-    return { npcs: nextNpcs, resources: nextResources, societies: nextSocieties, villages: nextVillages };
+    return { npcs: nextNpcs, resources: nextResources, societies: nextSocieties, villages: nextSettlements };
   }
 }
 
-function getNeededResource(village: Village) {
-  const entries = Object.entries(village.storage) as Array<[keyof Village["storage"], number]>;
+function getTargetResource(npc: NPC, settlement: DigitalSettlement): ResourceType {
+  if (npc.societyRole?.type === "researcher") return "data";
+  if (npc.societyRole?.type === "connector") return "signal";
+  if (npc.societyRole?.type === "architect") return settlement.storage.matter < settlement.storage.energy ? "matter" : "energy";
+  if (npc.societyRole?.type === "scout") return settlement.storage.core < 2 ? "core" : getNeededResource(settlement);
+  return getNeededResource(settlement);
+}
+
+function getNeededResource(settlement: DigitalSettlement): ResourceType {
+  const entries = Object.entries(settlement.storage) as Array<[ResourceType, number]>;
   return entries.sort((a, b) => a[1] - b[1])[0][0];
+}
+
+function getBuildTarget(npc: NPC, settlement: DigitalSettlement) {
+  if (npc.societyRole?.type !== "architect" && npc.societyRole?.type !== "connector") return null;
+  return settlement.structures.find((structure) => structure.status === "building") ?? null;
 }
 
 function addInventory<T extends Record<string, number>>(target: T, delta: Record<string, number>) {

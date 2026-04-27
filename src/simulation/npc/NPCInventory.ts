@@ -1,16 +1,16 @@
 import type { NPC } from "../../npc/types";
 import type { ResourceInventory, ResourceType } from "../resources/types";
-import { emptyInventory } from "../resources/types";
+import { emptyInventory, normalizeInventory } from "../resources/types";
 
 export function ensureInventory(npc: NPC): NPC {
   return {
     ...npc,
-    inventory: npc.inventory ?? { ...emptyInventory },
+    inventory: normalizeInventory(npc.inventory),
   };
 }
 
 export function addToInventory(npc: NPC, type: ResourceType, amount: number): NPC {
-  const inventory = npc.inventory ?? { ...emptyInventory };
+  const inventory = normalizeInventory(npc.inventory);
   return {
     ...npc,
     inventory: {
@@ -21,7 +21,7 @@ export function addToInventory(npc: NPC, type: ResourceType, amount: number): NP
 }
 
 export function clearInventory(npc: NPC): [NPC, ResourceInventory] {
-  const inventory = npc.inventory ?? { ...emptyInventory };
+  const inventory = normalizeInventory(npc.inventory);
   return [
     {
       ...npc,
@@ -32,6 +32,6 @@ export function clearInventory(npc: NPC): [NPC, ResourceInventory] {
 }
 
 export function getInventoryLoad(npc: NPC) {
-  const inventory = npc.inventory ?? emptyInventory;
+  const inventory = normalizeInventory(npc.inventory ?? emptyInventory);
   return Object.values(inventory).reduce((total, value) => total + value, 0);
 }
