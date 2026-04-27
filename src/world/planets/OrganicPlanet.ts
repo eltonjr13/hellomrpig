@@ -1,12 +1,26 @@
 import type { Planet, PlanetWorld } from "../PlanetManager";
+import { generatePlanetTerrain } from "../procedural/generatePlanetTerrain";
+import { getPlanetSurfacePosition } from "../procedural/planetGeometry";
 
 export function createOrganicPlanetWorld(planet: Planet): PlanetWorld {
   const prefix = planet.id;
+  const generatedTerrain = generatePlanetTerrain(planet, {
+    chunkSize: 18,
+    chunkRadius: 7,
+    objectDensity: 2.25,
+    treeColor: "#2d6a4f",
+    rockColor: "#6c757d",
+    fieldColor: "#52b788",
+    pathColor: "#9b7653",
+    accentColor: "#40916c",
+  });
 
   return {
     instanceKey: `${planet.id}:${planet.seed}`,
     planet,
-    spawnPoint: [0, 0, 5],
+    radius: planet.radius,
+    playableRadius: planet.radius * 0.68,
+    spawnPoint: getPlanetSurfacePosition(planet.radius, 0, 5),
     spawnRotationY: Math.PI,
     environment: {
       skyColor: "#87c8a5",
@@ -49,6 +63,7 @@ export function createOrganicPlanetWorld(planet: Planet): PlanetWorld {
       { id: `${prefix}-tree-4`, type: "tree", position: [12, 0, -17], color: "#2f7d4f", scale: 1.35 },
       { id: `${prefix}-growth-ring`, type: "field", position: [0, 0.035, 8], color: "#52b788", scale: [9, 0.08, 3.5], collision: false },
       { id: `${prefix}-nursery-tree`, type: "tree", position: [0, 0, 10], color: "#40916c", scale: 1.75 },
+      ...generatedTerrain,
     ],
     npcs: [
       {

@@ -38,7 +38,7 @@ export const PlanetSelector = memo(function PlanetSelector() {
               <span className={styles.info}>
                 <strong>{planet.name}</strong>
                 <small>
-                  {typeLabels[planet.type]} · {planet.playersOnline} online
+                  {typeLabels[planet.type]} · R{planet.radius} · {planet.playersOnline} online
                 </small>
               </span>
             </button>

@@ -1,6 +1,6 @@
 import { memo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Box3, Group, Scene, Vector3 } from "three";
+import { Box3, Group, Matrix4, Quaternion, Scene, Vector3 } from "three";
 import { usePlayerControls } from "../../hooks/usePlayerControls";
 import { useGameStore } from "../../store/useGameStore";
 import { PLAYABLE_CHARACTERS, PlayerModel, type PlayerAnimationState } from "./PlayerModel";
@@ -12,17 +12,23 @@ const MOVE_DECELERATION = 14;
 const TURN_SPEED = 12;
 const JUMP_VELOCITY = 7.5;
 const GRAVITY = 22;
-const GROUND_Y = 0;
-const WORLD_LIMIT = 245;
 const KICK_DURATION = 1.2;
 
 const playerBounds = new Box3();
 const objectBounds = new Box3();
 const nextPosition = new Vector3();
-const slidePosition = new Vector3();
 const boundsCenter = new Vector3();
 const movement = new Vector3();
 const desiredVelocity = new Vector3();
+const flatMoveDirection = new Vector3();
+const planetCenter = new Vector3();
+const surfaceNormal = new Vector3();
+const candidateNormal = new Vector3();
+const forwardDirection = new Vector3();
+const rightDirection = new Vector3();
+const correctedForward = new Vector3();
+const orientationMatrix = new Matrix4();
+const targetQuaternion = new Quaternion();
 const upAxis = new Vector3(0, 1, 0);
 const playerBoxSize = new Vector3(0.85, 1.8, 0.85);
 const playerBoxOffset = new Vector3(0, 0.9, 0);
@@ -45,6 +51,7 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   const wasToggleCameraPressedRef = useRef(false);
   const lockedActionRef = useRef<"kick" | "dance" | null>(null);
   const lockedActionTimerRef = useRef(0);
+  const headingYawRef = useRef(useGameStore.getState().playerRotationY);
   const [animationState, setAnimationState] = useState<PlayerAnimationState>("idle");
   const [animationSpeed, setAnimationSpeed] = useState(1);
   const initialPlayerPositionRef = useRef(useGameStore.getState().playerPosition);
@@ -59,6 +66,9 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
     const player = groupRef.current;
     if (!player) return;
     const frameDelta = Math.min(delta, 0.04);
+    const currentWorld = useGameStore.getState().currentWorld;
+    setPlanetCenter(planetCenter, currentWorld.radius);
+    setSurfaceNormal(surfaceNormal, planetCenter, player.position);
 
     movement.set(0, 0, 0);
     const input = inputRef.current;
@@ -121,8 +131,12 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
         lockedActionRef.current = null;
       }
 
-      movement.normalize().applyAxisAngle(upAxis, cameraYawRef.current);
-      desiredVelocity.copy(movement).multiplyScalar(input.run ? RUN_SPEED : WALK_SPEED);
+      flatMoveDirection.copy(movement).normalize().applyAxisAngle(upAxis, cameraYawRef.current);
+      desiredVelocity
+        .copy(flatMoveDirection)
+        .addScaledVector(surfaceNormal, -flatMoveDirection.dot(surfaceNormal))
+        .normalize()
+        .multiplyScalar(input.run ? RUN_SPEED : WALK_SPEED);
     } else {
       desiredVelocity.set(0, 0, 0);
     }
@@ -136,49 +150,37 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
 
     if (horizontalVelocityRef.current.lengthSq() > 0) {
       nextPosition.copy(player.position).addScaledVector(horizontalVelocityRef.current, frameDelta);
-      nextPosition.x = Math.max(-WORLD_LIMIT, Math.min(WORLD_LIMIT, nextPosition.x));
-      nextPosition.z = Math.max(-WORLD_LIMIT, Math.min(WORLD_LIMIT, nextPosition.z));
+      projectToPlanetRadius(nextPosition, planetCenter, currentWorld.radius + getSurfaceAltitude(player.position, planetCenter, currentWorld.radius));
 
-      if (canOccupyPosition(state.scene, nextPosition)) {
-        player.position.x = nextPosition.x;
-        player.position.z = nextPosition.z;
+      if (canOccupyPosition(state.scene, nextPosition, planetCenter)) {
+        player.position.copy(nextPosition);
       } else {
-        slidePosition.set(nextPosition.x, player.position.y, player.position.z);
-        if (canOccupyPosition(state.scene, slidePosition)) {
-          player.position.x = slidePosition.x;
-          horizontalVelocityRef.current.z = 0;
-        } else {
-          horizontalVelocityRef.current.x = 0;
-        }
-
-        slidePosition.set(player.position.x, player.position.y, nextPosition.z);
-        if (canOccupyPosition(state.scene, slidePosition)) {
-          player.position.z = slidePosition.z;
-          horizontalVelocityRef.current.x *= 0.65;
-        } else {
-          horizontalVelocityRef.current.z = 0;
-        }
+        horizontalVelocityRef.current.set(0, 0, 0);
       }
 
       didMove = Math.abs(player.position.x - previousX) + Math.abs(player.position.z - previousZ) > 0.002;
 
       if (didMove) {
         const targetRotation = Math.atan2(horizontalVelocityRef.current.x, horizontalVelocityRef.current.z);
-        player.rotation.y = lerpAngle(player.rotation.y, targetRotation, 1 - Math.exp(-TURN_SPEED * frameDelta));
+        headingYawRef.current = lerpAngle(headingYawRef.current, targetRotation, 1 - Math.exp(-TURN_SPEED * frameDelta));
       }
     }
 
+    setSurfaceNormal(surfaceNormal, planetCenter, player.position);
     verticalVelocityRef.current -= GRAVITY * frameDelta;
-    const nextY = player.position.y + verticalVelocityRef.current * frameDelta;
+    player.position.addScaledVector(surfaceNormal, verticalVelocityRef.current * frameDelta);
+    const altitude = getSurfaceAltitude(player.position, planetCenter, currentWorld.radius);
 
-    if (nextY <= GROUND_Y) {
-      player.position.y = GROUND_Y;
+    if (altitude <= 0) {
+      projectToPlanetRadius(player.position, planetCenter, currentWorld.radius);
       verticalVelocityRef.current = 0;
       isGroundedRef.current = true;
     } else {
-      player.position.y = nextY;
       isGroundedRef.current = false;
     }
+
+    setSurfaceNormal(surfaceNormal, planetCenter, player.position);
+    alignPlayerToPlanetSurface(player, surfaceNormal, headingYawRef.current, frameDelta);
 
     const nextAnimationState: PlayerAnimationState =
       lockedActionRef.current && isGroundedRef.current
@@ -206,7 +208,7 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
 
     useGameStore
       .getState()
-      .setPlayerTransform([player.position.x, player.position.y, player.position.z], player.rotation.y, didMove);
+      .setPlayerTransform([player.position.x, player.position.y, player.position.z], headingYawRef.current, didMove);
   });
 
   return (
@@ -229,8 +231,9 @@ export const Player = memo(function Player({ debug = false }: PlayerProps) {
   );
 });
 
-function canOccupyPosition(scene: Scene, position: Vector3) {
-  playerBounds.setFromCenterAndSize(boundsCenter.copy(position).add(playerBoxOffset), playerBoxSize);
+function canOccupyPosition(scene: Scene, position: Vector3, center: Vector3) {
+  candidateNormal.subVectors(position, center).normalize();
+  playerBounds.setFromCenterAndSize(boundsCenter.copy(position).addScaledVector(candidateNormal, playerBoxOffset.y), playerBoxSize);
 
   let blocked = false;
   scene.traverse((object) => {
@@ -245,4 +248,44 @@ function canOccupyPosition(scene: Scene, position: Vector3) {
 function lerpAngle(from: number, to: number, t: number) {
   const delta = Math.atan2(Math.sin(to - from), Math.cos(to - from));
   return from + delta * t;
+}
+
+function setPlanetCenter(target: Vector3, radius: number) {
+  target.set(0, -radius, 0);
+}
+
+function setSurfaceNormal(target: Vector3, center: Vector3, position: Vector3) {
+  target.subVectors(position, center);
+
+  if (target.lengthSq() < 0.0001) {
+    target.copy(upAxis);
+    return target;
+  }
+
+  return target.normalize();
+}
+
+function getSurfaceAltitude(position: Vector3, center: Vector3, radius: number) {
+  return position.distanceTo(center) - radius;
+}
+
+function projectToPlanetRadius(position: Vector3, center: Vector3, radius: number) {
+  setSurfaceNormal(candidateNormal, center, position);
+  position.copy(center).addScaledVector(candidateNormal, radius);
+}
+
+function alignPlayerToPlanetSurface(player: Group, normal: Vector3, headingYaw: number, delta: number) {
+  forwardDirection.set(Math.sin(headingYaw), 0, Math.cos(headingYaw));
+  forwardDirection.addScaledVector(normal, -forwardDirection.dot(normal));
+
+  if (forwardDirection.lengthSq() < 0.0001) {
+    forwardDirection.crossVectors(rightDirection.set(1, 0, 0), normal);
+  }
+
+  forwardDirection.normalize();
+  rightDirection.crossVectors(normal, forwardDirection).normalize();
+  correctedForward.crossVectors(rightDirection, normal).normalize();
+  orientationMatrix.makeBasis(rightDirection, normal, correctedForward);
+  targetQuaternion.setFromRotationMatrix(orientationMatrix);
+  player.quaternion.slerp(targetQuaternion, 1 - Math.exp(-TURN_SPEED * delta));
 }

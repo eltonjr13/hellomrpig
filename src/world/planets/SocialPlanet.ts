@@ -1,12 +1,26 @@
 import type { Planet, PlanetWorld } from "../PlanetManager";
+import { generatePlanetTerrain } from "../procedural/generatePlanetTerrain";
+import { getPlanetSurfacePosition } from "../procedural/planetGeometry";
 
 export function createSocialPlanetWorld(planet: Planet): PlanetWorld {
   const prefix = planet.id;
+  const generatedTerrain = generatePlanetTerrain(planet, {
+    chunkSize: 20,
+    chunkRadius: 6,
+    objectDensity: 1.7,
+    treeColor: "#57cc99",
+    rockColor: "#dee2e6",
+    fieldColor: "#80ed99",
+    pathColor: "#6c757d",
+    accentColor: "#8338ec",
+  });
 
   return {
     instanceKey: `${planet.id}:${planet.seed}`,
     planet,
-    spawnPoint: [0, 0, 1.5],
+    radius: planet.radius,
+    playableRadius: planet.radius * 0.64,
+    spawnPoint: getPlanetSurfacePosition(planet.radius, 0, 1.5),
     spawnRotationY: Math.PI,
     environment: {
       skyColor: "#8db7ff",
@@ -46,6 +60,7 @@ export function createSocialPlanetWorld(planet: Planet): PlanetWorld {
       { id: `${prefix}-shade-tree-2`, type: "tree", position: [12, 0, 2], color: "#57cc99", scale: 1.1 },
       { id: `${prefix}-marker-rock-1`, type: "rock", position: [-3.5, 0.3, -1], color: "#dee2e6", scale: [0.9, 0.55, 0.9] },
       { id: `${prefix}-marker-rock-2`, type: "rock", position: [3.5, 0.3, -1], color: "#dee2e6", scale: [0.9, 0.55, 0.9] },
+      ...generatedTerrain,
     ],
     npcs: [
       {

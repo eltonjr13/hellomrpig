@@ -13,6 +13,9 @@ const desiredPosition = new Vector3();
 const lookAtTarget = new Vector3();
 const cameraOffset = new Vector3();
 const forward = new Vector3();
+const planetCenter = new Vector3();
+const surfaceNormal = new Vector3();
+const tangentForward = new Vector3();
 
 export const CameraController = memo(function CameraController() {
   const camera = useThree((state) => state.camera);
@@ -27,24 +30,45 @@ export const CameraController = memo(function CameraController() {
       cameraPitch,
       cameraDistance,
       setCameraOrbit,
+      currentWorld,
     } = useGameStore.getState();
+
+    planetCenter.set(0, -currentWorld.radius, 0);
+    target.set(playerPosition[0], playerPosition[1], playerPosition[2]);
+    surfaceNormal.subVectors(target, planetCenter);
+
+    if (surfaceNormal.lengthSq() < 0.0001) {
+      surfaceNormal.set(0, 1, 0);
+    } else {
+      surfaceNormal.normalize();
+    }
+
+    tangentForward.set(Math.sin(playerRotationY), 0, Math.cos(playerRotationY));
+    tangentForward.addScaledVector(surfaceNormal, -tangentForward.dot(surfaceNormal));
+
+    if (tangentForward.lengthSq() < 0.0001) {
+      tangentForward.set(0, 0, 1);
+    } else {
+      tangentForward.normalize();
+    }
 
     if (cameraMode === "firstPerson") {
       setCameraFov(camera, FIRST_PERSON_FOV);
+      camera.up.copy(surfaceNormal);
 
-      forward.set(Math.sin(playerRotationY), 0, Math.cos(playerRotationY));
-      desiredPosition.set(
-        playerPosition[0] + forward.x * FIRST_PERSON_FORWARD_OFFSET,
-        playerPosition[1] + FIRST_PERSON_EYE_HEIGHT,
-        playerPosition[2] + forward.z * FIRST_PERSON_FORWARD_OFFSET,
-      );
+      forward.copy(tangentForward);
+      desiredPosition
+        .copy(target)
+        .addScaledVector(surfaceNormal, FIRST_PERSON_EYE_HEIGHT)
+        .addScaledVector(forward, FIRST_PERSON_FORWARD_OFFSET);
       camera.position.lerp(desiredPosition, 1 - Math.pow(0.0001, delta));
-      lookAtTarget.copy(desiredPosition).add(forward).add(new Vector3(0, 0.08, 0));
+      lookAtTarget.copy(desiredPosition).add(forward).addScaledVector(surfaceNormal, 0.08);
       camera.lookAt(lookAtTarget);
       return;
     }
 
     setCameraFov(camera, THIRD_PERSON_FOV);
+    camera.up.copy(surfaceNormal);
 
     const nextCameraYaw = playerIsMoving
       ? lerpAngle(cameraYaw, playerRotationY + Math.PI, 1 - Math.exp(-CAMERA_FOLLOW_TURN_SPEED * delta))
@@ -54,17 +78,23 @@ export const CameraController = memo(function CameraController() {
       setCameraOrbit(nextCameraYaw, cameraPitch);
     }
 
-    target.set(playerPosition[0], playerPosition[1], playerPosition[2]);
+    tangentForward.set(Math.sin(nextCameraYaw), 0, Math.cos(nextCameraYaw));
+    tangentForward.addScaledVector(surfaceNormal, -tangentForward.dot(surfaceNormal));
 
-    cameraOffset.set(
-      Math.sin(nextCameraYaw) * Math.cos(cameraPitch) * cameraDistance,
-      Math.sin(cameraPitch) * cameraDistance,
-      Math.cos(nextCameraYaw) * Math.cos(cameraPitch) * cameraDistance,
-    );
+    if (tangentForward.lengthSq() < 0.0001) {
+      tangentForward.copy(forward);
+    } else {
+      tangentForward.normalize();
+    }
+
+    cameraOffset
+      .copy(tangentForward)
+      .multiplyScalar(Math.cos(cameraPitch) * cameraDistance)
+      .addScaledVector(surfaceNormal, Math.sin(cameraPitch) * cameraDistance);
 
     desiredPosition.copy(target).add(cameraOffset);
     camera.position.lerp(desiredPosition, 1 - Math.pow(0.001, delta));
-    lookAtTarget.copy(target).add(new Vector3(0, 1.2, 0));
+    lookAtTarget.copy(target).addScaledVector(surfaceNormal, 1.2);
     camera.lookAt(lookAtTarget);
   });
 

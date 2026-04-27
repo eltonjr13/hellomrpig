@@ -1,9 +1,9 @@
 import { Sky, Stars } from "@react-three/drei";
 import { memo } from "react";
 import { CameraController } from "../components/CameraController";
-import { Ground } from "../components/Ground";
 import { NpcSystem } from "../components/NpcSystem";
 import { Player } from "../components/player/Player";
+import { SphericalPlanetSurface } from "../components/SphericalPlanetSurface";
 import { SpawnedObjects } from "../components/SpawnedObjects";
 import { useGameStore } from "../store/useGameStore";
 
@@ -39,7 +39,7 @@ export const MainScene = memo(function MainScene() {
         </>
       ) : null}
 
-      <Ground color={environment.groundColor} />
+      <SphericalPlanetSurface radius={currentWorld.radius} environment={environment} />
       <group key={`${currentWorld.instanceKey}:${worldRevision}`} name={`planet-${planet.id}`}>
         {planet.type === "organic" ? <OrganicPlanetElements /> : null}
         {planet.type === "social" ? <SocialPlanetElements /> : null}

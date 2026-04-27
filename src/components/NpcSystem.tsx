@@ -14,6 +14,7 @@ import {
 } from "three";
 import { MockAiEngine } from "../ai/aiEngine";
 import { useGameStore, type NpcAgent, type Vec3Tuple } from "../store/useGameStore";
+import { getSphereSurfaceY } from "../world/procedural/planetGeometry";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { clone } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { centerModel, scaleModelToHeight } from "../utils/centerModel";
@@ -72,6 +73,7 @@ export const NpcSystem = memo(function NpcSystem() {
 
   useFrame(({ clock }, delta) => {
     const state = useGameStore.getState();
+    const planetRadius = state.currentWorld.radius;
 
     for (const npc of state.npcs) {
       npcPosition.set(npc.position[0], npc.position[1], npc.position[2]);
@@ -88,7 +90,11 @@ export const NpcSystem = memo(function NpcSystem() {
 
       npcDirection.normalize();
       npcPosition.addScaledVector(npcDirection, Math.min(delta, 0.05) * NPC_SPEED);
-      state.updateNpcPosition(npc.id, [npcPosition.x, 0, npcPosition.z], npc.targetPosition);
+      state.updateNpcPosition(
+        npc.id,
+        [npcPosition.x, getSphereSurfaceY(planetRadius, npcPosition.x, npcPosition.z), npcPosition.z],
+        npc.targetPosition,
+      );
     }
 
     if (clock.elapsedTime - lastDecisionAtRef.current < 3) return;

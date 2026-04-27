@@ -9,6 +9,7 @@ export type Planet = {
   name: string;
   type: PlanetType;
   seed: number;
+  radius: number;
   playersOnline: number;
 };
 
@@ -26,6 +27,8 @@ export type PlanetEnvironment = {
 export type PlanetWorld = {
   instanceKey: string;
   planet: Planet;
+  radius: number;
+  playableRadius: number;
   spawnPoint: Vec3Tuple;
   spawnRotationY: number;
   spawnObjects: SpawnObject[];
@@ -41,6 +44,7 @@ export const availablePlanets: Planet[] = [
     name: "Verdantia",
     type: "organic",
     seed: 1327,
+    radius: 360,
     playersOnline: 8,
   },
   {
@@ -48,6 +52,7 @@ export const availablePlanets: Planet[] = [
     name: "Praca Nova",
     type: "social",
     seed: 2419,
+    radius: 390,
     playersOnline: 23,
   },
   {
@@ -55,6 +60,7 @@ export const availablePlanets: Planet[] = [
     name: "Neuralis",
     type: "ai",
     seed: 3901,
+    radius: 420,
     playersOnline: 5,
   },
   {
@@ -62,6 +68,7 @@ export const availablePlanets: Planet[] = [
     name: "Ferro Zero",
     type: "hardcore",
     seed: 4877,
+    radius: 340,
     playersOnline: 2,
   },
 ];
