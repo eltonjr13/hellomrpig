@@ -31,11 +31,11 @@ export function DigitalBuildingMesh({ structure, color = "#00ffff" }: DigitalBui
 
   return (
     <group ref={meshRef} position={[structure.position.x, structure.position.y, structure.position.z]}>
-      <mesh position={[0, 1, 0]} castShadow receiveShadow>
+      <mesh position={[0, structure.type === "core_node" ? 8 : structure.type === "energy_tower" ? 2 : 1, 0]} castShadow receiveShadow>
         {structure.type === "energy_tower" ? (
           <cylinderGeometry args={[0.5, 0.8, 4]} />
         ) : structure.type === "core_node" ? (
-          <octahedronGeometry args={[2]} />
+          <boxGeometry args={[4, 16, 4]} />
         ) : (
           <boxGeometry args={[2, 2, 2]} />
         )}
@@ -50,7 +50,7 @@ export function DigitalBuildingMesh({ structure, color = "#00ffff" }: DigitalBui
       </mesh>
       
       {isBuilding && (
-        <group position={[0, 3.5, 0]}>
+        <group position={[0, structure.type === "core_node" ? 17 : structure.type === "energy_tower" ? 4.5 : 2.5, 0]}>
           <mesh>
             <planeGeometry args={[2, 0.2]} />
             <meshBasicMaterial color="#333" side={THREE.DoubleSide} />
