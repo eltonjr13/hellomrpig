@@ -96,7 +96,14 @@ export class VillageManager extends DigitalSettlementManager {}
 
 function normalizeSettlement(settlement: DigitalSettlement, society?: Society): DigitalSettlement {
   const legacy = settlement as DigitalSettlement & { buildings?: DigitalSettlement["structures"] };
-  const structures = legacy.structures ?? legacy.buildings ?? [];
+  const rawStructures = legacy.structures ?? legacy.buildings ?? [];
+  const structures = rawStructures.map(s => {
+    if (s.cost && 'core' in s.cost) {
+      const { core, ...restCost } = s.cost as any;
+      return { ...s, cost: { ...restCost, crystal: (restCost.crystal || 0) + core } };
+    }
+    return s;
+  });
   const coreStructure = structures.find((structure) => structure.type === "core_node");
 
   return {
@@ -109,3 +116,4 @@ function normalizeSettlement(settlement: DigitalSettlement, society?: Society): 
     techLevel: settlement.techLevel ?? society?.techLevel ?? 1,
   };
 }
+

@@ -28,14 +28,14 @@ export function chooseNextStructure(society: Society, settlement: DigitalSettlem
 }
 
 export function getStructureCost(type: StructureType) {
-  if (type === "core_node") return { energy: 20, matter: 18, data: 6, core: 1 };
+  if (type === "core_node") return { energy: 20, matter: 18, data: 6, crystal: 1 };
   if (type === "habitation_pod") return { energy: 10, matter: 16, signal: 4 };
   if (type === "energy_tower") return { energy: 8, matter: 14, data: 4 };
   if (type === "data_farm") return { energy: 14, matter: 12, data: 8 };
   if (type === "logic_lab") return { energy: 18, matter: 18, data: 18, signal: 6 };
   if (type === "social_hub") return { energy: 12, matter: 14, signal: 18 };
   if (type === "shield_gate") return { energy: 24, matter: 20, signal: 10 };
-  if (type === "memory_archive") return { energy: 18, matter: 18, data: 28, core: 1 };
+  if (type === "memory_archive") return { energy: 18, matter: 18, data: 28, crystal: 1 };
   return { energy: 4, matter: 4, signal: 8 };
 }
 
