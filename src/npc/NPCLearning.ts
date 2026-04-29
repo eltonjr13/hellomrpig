@@ -11,6 +11,7 @@ const ACTION_TO_WEIGHT: Partial<Record<NPCAction, keyof NPC["learning"]["behavio
   go_to_safe_place: "avoid",
   follow_player: "follow",
   protect: "avoid",
+  build_structure: "explore",
 };
 
 export function applyActionReward(npc: NPC, action: NPCAction, reward: number, worldState: NPCWorldState) {

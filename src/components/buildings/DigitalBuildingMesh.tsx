@@ -15,6 +15,7 @@ export function DigitalBuildingMesh({ structure, color = "#00ffff" }: DigitalBui
   const progressRef = useRef<THREE.MeshBasicMaterial>(null);
 
   const isBuilding = structure.status === "building";
+  const activeWorkerCount = structure.activeWorkers?.length ?? 0;
 
   useFrame((state) => {
     if (!meshRef.current || !materialRef.current) return;
@@ -70,6 +71,19 @@ export function DigitalBuildingMesh({ structure, color = "#00ffff" }: DigitalBui
           </Text>
         </group>
       )}
+      {isBuilding && activeWorkerCount > 0 ? (
+        <group position={[0, 0.08, 0]}>
+          {Array.from({ length: Math.min(activeWorkerCount, 6) }, (_, index) => {
+            const angle = (index / Math.min(activeWorkerCount, 6)) * Math.PI * 2;
+            return (
+              <mesh key={`${structure.id}-worker-${index}`} position={[Math.cos(angle) * 1.75, 0.06, Math.sin(angle) * 1.75]}>
+                <sphereGeometry args={[0.12, 10, 10]} />
+                <meshStandardMaterial color="#ffd43b" emissive={color} emissiveIntensity={1.6} roughness={0.25} />
+              </mesh>
+            );
+          })}
+        </group>
+      ) : null}
     </group>
   );
 }

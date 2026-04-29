@@ -4,6 +4,7 @@ import { getStructureCost, getStructureImportance } from "./BuildingPlanner";
 import { distance } from "../resources/ResourceManager";
 
 const MIN_STRUCTURE_DISTANCE = 2.6;
+const PASSIVE_BUILD_PROGRESS_RATIO = 0.22;
 
 export function createStructure(type: StructureType, settlement: DigitalSettlement, index: number): Structure {
   const connectedToId = type === "core_node" ? null : findConnectionTarget(settlement, type);
@@ -41,11 +42,12 @@ export function advanceConstruction(settlement: DigitalSettlement, deltaSeconds:
   const structures = settlement.structures.map((structure) => {
     if (structure.status !== "building") return structure;
     changed = true;
-    const progress = Math.min(100, structure.progress + deltaSeconds * getBuildSpeed(settlement, structure.type));
+    const progress = Math.min(100, structure.progress + deltaSeconds * getBuildSpeed(settlement, structure.type) * PASSIVE_BUILD_PROGRESS_RATIO);
     return {
       ...structure,
       progress,
       status: progress >= 100 ? "completed" as const : "building" as const,
+      activeWorkers: progress >= 100 ? [] : structure.activeWorkers,
     };
   });
 

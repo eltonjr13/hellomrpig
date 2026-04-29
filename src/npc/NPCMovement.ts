@@ -41,7 +41,7 @@ export function moveNPC(npc: NPC, worldState: NPCWorldState, deltaSeconds: numbe
 }
 
 function getActionSpeed(action: NPCAction, mood: NPC["mood"]["current"]) {
-  const base = action === "avoid_player" ? 2.4 : action === "explore_area" ? 1.65 : action === "rest" ? 0 : 1.25;
+  const base = action === "avoid_player" ? 2.4 : action === "explore_area" ? 1.65 : action === "rest" ? 0 : action === "build_structure" ? 1.08 : 1.25;
   if (mood === "afraid" || mood === "excited") return base * 1.28;
   if (mood === "sad") return base * 0.72;
   return base;

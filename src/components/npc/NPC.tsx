@@ -41,6 +41,12 @@ export const NPC = memo(function NPC({ npc }: NPCProps) {
         <ringGeometry args={[0.26, 0.3, 18]} />
         <meshBasicMaterial color={getActionColor(npc.currentAction)} />
       </mesh>
+      {npc.currentAction === "build_structure" ? (
+        <mesh position={[0, 0.72, 0.42]} rotation={[0, 0, Math.PI / 4]}>
+          <boxGeometry args={[0.14, 0.52, 0.14]} />
+          <meshStandardMaterial color="#ffe66d" emissive="#ff9f1c" emissiveIntensity={0.8} roughness={0.35} />
+        </mesh>
+      ) : null}
     </group>
   );
 });
@@ -79,5 +85,6 @@ function getActionColor(action: NPCState["currentAction"]) {
   if (action === "rest") return "#b197fc";
   if (action === "explore_area") return "#69db7c";
   if (action === "protect") return "#ff3f71";
+  if (action === "build_structure") return "#ffd43b";
   return "#f8f9fa";
 }

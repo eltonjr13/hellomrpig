@@ -73,7 +73,7 @@ export const useWorldSimulationStore = create<WorldSimulationState>((set, get) =
     let villages = settlementManager.update(planetId, societies, state.villages, resources, delta, radius);
     societies = attachSettlementData(societies, villages);
     let nextNpcs = roleSystem.assignRoles(npcs, societies, villages);
-    const jobResult = npcJobSystem.execute(nextNpcs, resources, societies, villages, radius);
+    const jobResult = npcJobSystem.execute(nextNpcs, resources, societies, villages, radius, delta);
 
     nextNpcs = jobResult.npcs;
     resources = jobResult.resources;

@@ -60,10 +60,12 @@ function estimateReward(npc: NPC, action: NPC["currentAction"]) {
   if (action === "avoid_player") return npc.needs.safety < 45 ? 22 : -8;
   if (action === "explore_area") return npc.personality.curiosity > 60 ? 16 : 2;
   if (action === "follow_player") return npc.personality.loyalty > 55 ? 14 : -3;
+  if (action === "build_structure") return npc.role === "builder" ? 20 : 8;
   return 4;
 }
 
 function actionToGoal(action: NPC["currentAction"]): NPC["goals"][number]["type"] {
+  if (action === "build_structure") return "build";
   if (action === "protect") return "protect";
   if (action === "rest" || action === "return_home") return "rest";
   if (action === "approach_player" || action === "talk_to_npc") return "socialize";

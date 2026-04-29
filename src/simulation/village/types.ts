@@ -21,10 +21,12 @@ export type Structure = {
   level: number;
   health: number;
   cost: Partial<ResourceInventory>;
+  requiredWork?: number;
   progress: number;
   status: StructureStatus;
   connectedToId: string | null;
   importance: number;
+  activeWorkers?: string[];
 };
 
 export type NeonPath = {

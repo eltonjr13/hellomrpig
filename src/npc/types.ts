@@ -13,7 +13,8 @@ export type NPCAction =
   | "explore_area"
   | "follow_player"
   | "return_home"
-  | "protect";
+  | "protect"
+  | "build_structure";
 
 export type NPCPosition = {
   x: number;

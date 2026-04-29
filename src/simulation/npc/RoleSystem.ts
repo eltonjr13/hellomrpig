@@ -40,8 +40,8 @@ function chooseRole(npc: NPC, society: Society, settlement?: DigitalSettlement):
   if (isNeonPath && npc.personality.social > 50) return "connector";
 
   if (hasConstruction) {
-    // Apenas ~33% viram builders, o resto continua minerando ou pesquisando
-    if (npc.role === "builder" || npc.id.charCodeAt(0) % 3 === 0) {
+    const buildAffinity = stableRatio(npc.id) * 100 + npc.personality.loyalty * 0.22 + npc.personality.openness * 0.18;
+    if (npc.role === "builder" || buildAffinity > 64) {
       return "builder";
     }
   }
@@ -52,4 +52,13 @@ function chooseRole(npc: NPC, society: Society, settlement?: DigitalSettlement):
   if (npc.personality.social > 62) return "connector";
   
   return "miner";
+}
+
+function stableRatio(value: string) {
+  let state = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    state ^= value.charCodeAt(index);
+    state = Math.imul(state, 16777619);
+  }
+  return (state >>> 0) / 4294967295;
 }
