@@ -1,0 +1,106 @@
+{
+  "product": {
+    "name": "KAZENTO Cable Vector",
+    "slug": "kazento_cable_vector",
+    "version": "0.1.0",
+    "unit": "mm",
+    "objective": "A modular magnetic cable routing product that holds and redirects cables using printable snap-fit modules and internal magnet slots.",
+    "source_of_truth": "FreeCAD",
+    "manufacturing_process": "FDM 3D printing"
+  },
+  "materials": {
+    "recommended": ["PETG", "PLA+"],
+    "assumed_nozzle_diameter_mm": 0.4,
+    "assumed_layer_height_mm": 0.2
+  },
+  "print_rules": {
+    "minimum_wall_thickness_mm": 1.6,
+    "recommended_wall_thickness_mm": 2.4,
+    "snap_fit_clearance_min_mm": 0.25,
+    "snap_fit_clearance_max_mm": 0.45,
+    "snap_fit_clearance_default_mm": 0.35,
+    "magnet_housing_clearance_mm": 0.2,
+    "max_unsupported_overhang_deg": 45
+  },
+  "dimensions": {
+    "base_length_mm": 120,
+    "base_width_mm": 28,
+    "base_height_mm": 7,
+    "guide_height_mm": 16,
+    "cable_channel_width_mm": 18,
+    "cable_channel_height_mm": 9,
+    "corner_radius_mm": 3,
+    "cover_thickness_mm": 2.4,
+    "snap_tab_width_mm": 8,
+    "snap_tab_height_mm": 2,
+    "snap_tab_depth_mm": 3,
+    "snap_fit_clearance_mm": 0.35,
+    "magnet_diameter_mm": 6,
+    "magnet_height_mm": 2,
+    "magnet_pocket_diameter_mm": 6.2,
+    "magnet_pocket_depth_mm": 2.2,
+    "magnet_count": 4
+  },
+  "modules": [
+    {
+      "name": "magnetic_base_core",
+      "type": "printable_part",
+      "required": true,
+      "description": "Main low-profile base with rounded edges and internal cylindrical pockets for magnets.",
+      "print_orientation": "Flat on the bottom face.",
+      "exports": ["FCStd", "STEP", "STL"]
+    },
+    {
+      "name": "straight_cable_guide",
+      "type": "printable_part",
+      "required": true,
+      "description": "Straight cable channel mounted above the base.",
+      "print_orientation": "Flat on the base contact face.",
+      "exports": ["STEP", "STL"]
+    },
+    {
+      "name": "snap_cover",
+      "type": "printable_part",
+      "required": true,
+      "description": "Removable top cover that retains the cable inside the guide.",
+      "print_orientation": "Top face upward, flat underside on bed.",
+      "exports": ["STEP", "STL"]
+    },
+    {
+      "name": "angled_redirection_module",
+      "type": "future_printable_part",
+      "required": true,
+      "description": "Angled module for redirecting cable paths in a later iteration.",
+      "print_orientation": "To be defined after angle is selected.",
+      "exports": ["STEP", "STL"]
+    },
+    {
+      "name": "multi_cable_channel_module",
+      "type": "future_printable_part",
+      "required": true,
+      "description": "Wider module for routing multiple cables in parallel.",
+      "print_orientation": "Flat on the base contact face.",
+      "exports": ["STEP", "STL"]
+    },
+    {
+      "name": "modular_snap_interface",
+      "type": "mechanical_interface",
+      "required": true,
+      "description": "Reusable snap geometry using the default 0.35 mm clearance.",
+      "exports": []
+    },
+    {
+      "name": "internal_magnet_slots",
+      "type": "feature_set",
+      "required": true,
+      "description": "Four internal cylindrical magnet pockets sized 6.2 mm x 2.2 mm for 6 mm x 2 mm magnets.",
+      "exports": []
+    }
+  ],
+  "assumptions": [
+    "Base corner radius applies to the XY outline only in the first CAD pass.",
+    "Magnet pockets are blind holes from the underside of the base.",
+    "Straight guide is centered on the base.",
+    "First version prioritizes function over decorative styling."
+  ]
+}
